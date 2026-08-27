@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="스킬 단위 적응형 연산 훈련. 정확도와 속도를 함께 통과해야 숙달로 인정합니다.">
+<meta name="theme-color" content="#EFF2F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1520" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="연산 도장">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>연산 도장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+
+<style>
+/* ── 토큰: 밝은 테마가 기본 정의 ───────────────────────────── */
+:root{
+  --bg:#EFF2F6; --grid:#DCE3EC; --card:#FFFFFF; --card2:#F5F8FB; --line:#D5DEE8;
+  --ink:#16202D; --ink2:#4C5B6C; --ink3:#7C8A99;
+  --brand:#2F5D8C; --brand-ink:#FFFFFF; --brand-soft:#E3EDF7;
+  --mark:#C6432A; --mark-soft:#FAE6E1;
+  --ok:#14806A; --ok-soft:#DDF0EA;
+  --gold:#9C7220; --gold-soft:#F6ECD6;
+  --shadow:0 1px 2px rgba(20,32,45,.05), 0 10px 28px -16px rgba(20,32,45,.35);
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1520; --grid:#18232F; --card:#141F2C; --card2:#101A25; --line:#25333F;
+    --ink:#E7EDF4; --ink2:#A7B5C4; --ink3:#78889A;
+    --brand:#7FB3E3; --brand-ink:#0D1520; --brand-soft:#182A3C;
+    --mark:#F0785A; --mark-soft:#321914;
+    --ok:#4FC7A4; --ok-soft:#0F2E27;
+    --gold:#DDAE55; --gold-soft:#2C2413;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 30px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1520; --grid:#18232F; --card:#141F2C; --card2:#101A25; --line:#25333F;
+  --ink:#E7EDF4; --ink2:#A7B5C4; --ink3:#78889A;
+  --brand:#7FB3E3; --brand-ink:#0D1520; --brand-soft:#182A3C;
+  --mark:#F0785A; --mark-soft:#321914;
+  --ok:#4FC7A4; --ok-soft:#0F2E27;
+  --gold:#DDAE55; --gold-soft:#2C2413;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 30px -18px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; color:var(--ink);
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;
+  font-family:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  font-size:15px; line-height:1.6;
+  -webkit-text-size-adjust:100%;
+}
+h1,h2,h3{font-family:"Gowun Batang","IBM Plex Sans KR",serif; font-weight:700; margin:0; text-wrap:balance; letter-spacing:-.01em}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--brand); outline-offset:2px; border-radius:6px}
+
+/* ── 셸 ─────────────────────────────────────────────────── */
+.wrap{max-width:640px; margin:0 auto; padding:0 14px 96px; min-height:100vh}
+header.top{
+  display:flex; align-items:center; gap:10px; padding:16px 2px 12px; position:sticky; top:0; z-index:20;
+  background:linear-gradient(var(--bg) 72%, transparent);
+}
+.logo{display:flex; align-items:baseline; gap:8px}
+.logo h1{font-size:20px}
+.logo .kanji{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.22em; color:var(--ink3); text-transform:uppercase}
+.spacer{flex:1}
+.iconbtn{width:34px; height:34px; border-radius:9px; border:1px solid var(--line); background:var(--card); display:grid; place-items:center; font-size:14px}
+.iconbtn:hover{border-color:var(--brand)}
+.who{display:flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--card); border-radius:9px; padding:5px 10px; font-size:13px; font-weight:600}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow)}
+.pad{padding:16px}
+.stack{display:flex; flex-direction:column; gap:14px}
+.row{display:flex; align-items:center; gap:10px}
+.muted{color:var(--ink2)}
+.tiny{font-size:12.5px; color:var(--ink3)}
+.eyebrow{font-size:11px; font-weight:600; letter-spacing:.16em; color:var(--ink3); text-transform:uppercase; font-family:"IBM Plex Mono",monospace}
+
+.screen{display:none}
+.screen.on{display:block}
+
+/* ── 오늘 화면 ──────────────────────────────────────────── */
+.hero{position:relative; overflow:hidden; padding:20px 18px 18px}
+.hero h2{font-size:26px; margin-bottom:2px}
+.ringwrap{display:flex; align-items:center; gap:18px; margin-top:14px}
+.ring{position:relative; width:104px; height:104px; flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .val{position:absolute; inset:0; display:grid; place-items:center; text-align:center; line-height:1.15}
+.ring .val b{font-family:"IBM Plex Mono",monospace; font-size:23px; font-weight:600; display:block}
+.ring .val span{font-size:11px; color:var(--ink3)}
+.facts{display:flex; flex-direction:column; gap:7px; flex:1; min-width:0}
+.fact{display:flex; justify-content:space-between; align-items:baseline; gap:8px; border-bottom:1px dotted var(--line); padding-bottom:6px}
+.fact:last-child{border-bottom:none; padding-bottom:0}
+.fact .k{font-size:13px; color:var(--ink2)}
+.fact .v{font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums}
+
+.btn{display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 18px; border-radius:12px; font-weight:600; border:1px solid transparent; width:100%}
+.btn.pri{background:var(--brand); color:var(--brand-ink); font-size:16.5px}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sec{background:var(--card); border-color:var(--line); color:var(--ink)}
+.btn.sec:hover{border-color:var(--brand); color:var(--brand)}
+.btn.ghost{background:transparent; color:var(--ink2); padding:9px 12px; width:auto; font-size:13.5px}
+.btn.ghost:hover{color:var(--brand)}
+.btn[disabled]{opacity:.45; cursor:default}
+
+.chips{display:flex; gap:7px; flex-wrap:wrap}
+.chip{font-size:12.5px; padding:4px 10px; border-radius:999px; border:1px solid var(--line); background:var(--card2); font-weight:500}
+.chip.ok{background:var(--ok-soft); border-color:transparent; color:var(--ok)}
+.chip.mark{background:var(--mark-soft); border-color:transparent; color:var(--mark)}
+.chip.gold{background:var(--gold-soft); border-color:transparent; color:var(--gold)}
+.chip.brand{background:var(--brand-soft); border-color:transparent; color:var(--brand)}
+
+/* 스트릭 잔디 */
+.grass{display:grid; grid-template-columns:repeat(auto-fit,minmax(0,1fr)); gap:3px}
+.grass i{aspect-ratio:1; border-radius:3px; background:var(--card2); border:1px solid var(--line); display:block}
+.grass i[data-l="1"]{background:color-mix(in srgb, var(--ok) 22%, var(--card)); border-color:transparent}
+.grass i[data-l="2"]{background:color-mix(in srgb, var(--ok) 48%, var(--card)); border-color:transparent}
+.grass i[data-l="3"]{background:color-mix(in srgb, var(--ok) 78%, var(--card)); border-color:transparent}
+
+/* ── 문제 화면 ──────────────────────────────────────────── */
+#drill{position:relative}
+.dhead{display:flex; align-items:center; gap:10px; padding:12px 2px 8px}
+.progline{flex:1; height:6px; border-radius:99px; background:var(--card2); border:1px solid var(--line); overflow:hidden}
+.progline i{display:block; height:100%; background:var(--brand); width:0; transition:width .25s ease}
+.dstat{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums}
+
+.qcard{padding:26px 18px 18px; text-align:center; position:relative; overflow:hidden}
+.qskill{font-size:11.5px; letter-spacing:.1em; color:var(--ink3); font-family:"IBM Plex Mono",monospace; margin-bottom:14px}
+.expr{
+  font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums;
+  font-size:clamp(30px,8.5vw,46px); line-height:1.35; display:flex; align-items:center;
+  justify-content:center; flex-wrap:wrap; gap:.18em; min-height:1.6em; word-break:keep-all;
+}
+.bl{
+  display:inline-grid; place-items:center; min-width:1.55em; padding:0 .1em; border-bottom:3px solid var(--ink3);
+  color:var(--brand);
+}
+.bl.active{border-bottom-color:var(--brand); animation:caret 1.1s steps(1) infinite}
+@keyframes caret{50%{border-bottom-color:transparent}}
+.fr{display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; font-size:.62em; line-height:1.15; margin:0 .12em}
+.fr i{font-style:normal; padding:0 .35em}
+.fr i:first-child{border-bottom:2px solid currentColor}
+.fr .bl{min-width:1.4em; border-bottom-width:2px}
+.fr i:first-child.bl{border-bottom:3px solid var(--brand)}
+.qr{display:inline-flex; align-items:center; gap:.25em; font-size:.8em}
+.qr small{font-size:.5em; color:var(--ink3); font-family:"IBM Plex Sans KR",sans-serif}
+/* 조건 문장 — 큰 식 위에 한 단계 작게 */
+.lead{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:clamp(15px,4vw,19px);
+  color:var(--ink2); margin:-4px 0 12px; line-height:1.5; display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:.15em}
+.lead .fr{font-size:.7em}
+/* 지수 */
+.expo{font-size:.58em; vertical-align:super; line-height:0; margin-left:.03em; font-weight:600}
+.expo .bl{min-width:1.7em; border-bottom-width:2px}
+
+.pace{height:4px; border-radius:99px; background:var(--card2); margin:20px 0 0; overflow:hidden; border:1px solid var(--line)}
+.pace i{display:block; height:100%; width:0; background:var(--ok)}
+
+.qcard.good{border-color:var(--ok); background:var(--ok-soft)}
+.qcard.bad{border-color:var(--mark)}
+@media (prefers-reduced-motion:no-preference){
+  .qcard.bad{animation:shake .3s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+}
+.verdict{position:absolute; top:10px; right:14px; font-family:"Gowun Batang",serif; font-size:30px; font-weight:700}
+.verdict.o{color:var(--ok)} .verdict.x{color:var(--mark)}
+
+.hint{margin-top:14px; text-align:left; background:var(--card2); border:1px solid var(--line); border-left:3px solid var(--gold); border-radius:9px; padding:12px 14px; font-size:14px; line-height:1.65}
+.hint b{color:var(--gold)}
+.hint .ans{font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--ink)}
+
+/* 키패드 */
+.pad9{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:14px}
+.key{
+  height:58px; border-radius:12px; border:1px solid var(--line); background:var(--card);
+  font-family:"IBM Plex Mono",monospace; font-size:22px; font-weight:600; box-shadow:0 1px 0 var(--line);
+  display:grid; place-items:center; user-select:none; -webkit-user-select:none;
+}
+.key:active{transform:translateY(1px); background:var(--card2)}
+.key.sm{font-size:15px; font-family:"IBM Plex Sans KR",sans-serif; color:var(--ink2)}
+.key.go{grid-column:span 2; background:var(--brand); color:var(--brand-ink); border-color:transparent; font-family:"IBM Plex Sans KR",sans-serif; font-size:16px}
+.key.wide{grid-column:span 2}
+.key.off{opacity:.3; pointer-events:none}
+
+/* ── 커리큘럼 ───────────────────────────────────────────── */
+.stage{border:1px solid var(--line); border-radius:var(--r); background:var(--card); overflow:hidden; box-shadow:var(--shadow)}
+.stage > summary{list-style:none; cursor:pointer; padding:14px 16px; display:flex; align-items:center; gap:12px}
+.stage > summary::-webkit-details-marker{display:none}
+.stage .no{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--brand); background:var(--brand-soft); border-radius:7px; padding:3px 8px; flex:none}
+.stage .nm{flex:1; min-width:0}
+.stage .nm b{display:block; font-size:15px; font-weight:600}
+.stage .nm span{font-size:12.5px; color:var(--ink3)}
+.bar{height:5px; border-radius:99px; background:var(--card2); overflow:hidden; border:1px solid var(--line); width:56px; flex:none}
+.bar i{display:block; height:100%; background:var(--ok)}
+.stage[data-lock="1"] .nm b{color:var(--ink3)}
+.slist{border-top:1px solid var(--line)}
+.srow{display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:none}
+.srow .sn{flex:1; min-width:0; font-size:14px}
+.srow .sn em{font-style:normal; display:block; font-size:12px; color:var(--ink3); font-family:"IBM Plex Mono",monospace}
+.srow .met{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink2); text-align:right; font-variant-numeric:tabular-nums; min-width:62px}
+.play{border:1px solid var(--line); border-radius:8px; padding:5px 11px; font-size:12.5px; font-weight:600; color:var(--brand)}
+.play:hover{background:var(--brand-soft)}
+
+/* ── 기록 ───────────────────────────────────────────────── */
+.heat{display:grid; grid-template-columns:auto repeat(8,1fr); gap:3px; font-family:"IBM Plex Mono",monospace; font-size:11px}
+.heat b, .heat u{display:grid; place-items:center; color:var(--ink3); font-weight:600; text-decoration:none; height:22px}
+.heat span{aspect-ratio:1; border-radius:5px; display:grid; place-items:center; font-size:10.5px; border:1px solid var(--line); background:var(--card2); color:var(--ink3)}
+.heat span[data-s="ok"]{background:color-mix(in srgb,var(--ok) 68%,var(--card)); border-color:transparent; color:#fff}
+.heat span[data-s="mid"]{background:color-mix(in srgb,var(--gold) 55%,var(--card)); border-color:transparent; color:var(--ink)}
+.heat span[data-s="bad"]{background:color-mix(in srgb,var(--mark) 60%,var(--card)); border-color:transparent; color:#fff}
+
+table.tbl{width:100%; border-collapse:collapse; font-size:13.5px}
+table.tbl th{text-align:left; font-size:11px; letter-spacing:.1em; color:var(--ink3); font-weight:600; padding:0 8px 7px; text-transform:uppercase; font-family:"IBM Plex Mono",monospace}
+table.tbl td{padding:8px; border-top:1px solid var(--line); vertical-align:middle}
+table.tbl td.n{font-family:"IBM Plex Mono",monospace; text-align:right; font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+
+/* ── 결과 ───────────────────────────────────────────────── */
+.big{font-family:"IBM Plex Mono",monospace; font-size:44px; font-weight:600; line-height:1.1}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; text-align:center}
+.grid3 .cell{background:var(--card2); border:1px solid var(--line); border-radius:11px; padding:12px 6px}
+.grid3 .cell b{display:block; font-family:"IBM Plex Mono",monospace; font-size:21px; font-weight:600}
+.grid3 .cell span{font-size:11.5px; color:var(--ink3)}
+.revlist{display:flex; flex-direction:column; gap:9px}
+.rev{border:1px solid var(--line); border-left:3px solid var(--mark); border-radius:9px; padding:10px 12px; background:var(--card2)}
+.rev .e{font-family:"IBM Plex Mono",monospace; font-size:16px; font-weight:600}
+.rev .e s{color:var(--mark); text-decoration-thickness:2px}
+.rev .h{font-size:13px; color:var(--ink2); margin-top:4px; line-height:1.6}
+
+/* ── 하단 탭 ────────────────────────────────────────────── */
+nav.tabs{
+  position:fixed; left:0; right:0; bottom:0; z-index:30; display:flex; justify-content:center; gap:2px;
+  background:color-mix(in srgb,var(--card) 92%, transparent); backdrop-filter:blur(10px);
+  border-top:1px solid var(--line); padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+nav.tabs button{flex:1; max-width:150px; padding:7px 4px 5px; border-radius:10px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; color:var(--ink3); font-weight:500}
+nav.tabs button em{font-style:normal; font-size:17px; line-height:1}
+nav.tabs button.on{color:var(--brand); background:var(--brand-soft)}
+nav.tabs.hide{display:none}
+
+/* 설정 */
+.opt{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--line)}
+.opt:last-child{border-bottom:none}
+.opt .lab b{display:block; font-size:14px; font-weight:600}
+.opt .lab span{font-size:12.5px; color:var(--ink3)}
+.seg{display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; flex:none}
+.seg button{padding:6px 12px; font-size:13px; font-weight:600; color:var(--ink2)}
+.seg button.on{background:var(--brand); color:var(--brand-ink)}
+input.txt{font:inherit; padding:9px 11px; border-radius:9px; border:1px solid var(--line); background:var(--card2); color:var(--ink); width:100%}
+textarea.txt{font-family:"IBM Plex Mono",monospace; font-size:11px; padding:10px; border-radius:9px; border:1px solid var(--line); background:var(--card2); color:var(--ink2); width:100%; height:110px; resize:vertical}
+
+#toast{position:fixed; left:50%; bottom:78px; transform:translateX(-50%) translateY(20px); z-index:60; opacity:0; pointer-events:none; transition:.25s}
+#toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+#toast .t{background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:99px; font-size:13.5px; font-weight:600; box-shadow:var(--shadow); white-space:nowrap}
+
+.sheet{position:fixed; inset:0; z-index:50; display:none; align-items:flex-end; justify-content:center; background:rgba(10,18,28,.5)}
+.sheet.on{display:flex}
+.sheet .inner{background:var(--card); border-radius:18px 18px 0 0; width:100%; max-width:640px; padding:20px 18px calc(24px + env(safe-area-inset-bottom)); max-height:84vh; overflow:auto; border-top:1px solid var(--line)}
+@media (min-width:660px){ .sheet{align-items:center} .sheet .inner{border-radius:18px} }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><h1>연산 도장</h1><span class="kanji">daily drill</span></div>
+    <div class="spacer"></div>
+    <button class="who" id="whoBtn"><span id="whoName">학습자</span> ▾</button>
+    <button class="iconbtn" id="themeBtn" aria-label="밝기 전환">◐</button>
+  </header>
+
+  <!-- 오늘 -->
+  <section class="screen on" id="home"></section>
+  <!-- 문제 -->
+  <section class="screen" id="drill"></section>
+  <!-- 결과 -->
+  <section class="screen" id="result"></section>
+  <!-- 커리큘럼 -->
+  <section class="screen" id="curri"></section>
+  <!-- 기록 -->
+  <section class="screen" id="stats"></section>
+  <!-- 설정 -->
+  <section class="screen" id="setting"></section>
+</div>
+
+<nav class="tabs" id="tabs">
+  <button data-go="home" class="on"><em>◎</em>오늘</button>
+  <button data-go="curri"><em>▤</em>커리큘럼</button>
+  <button data-go="stats"><em>▦</em>기록</button>
+  <button data-go="setting"><em>⚙</em>설정</button>
+</nav>
+
+<div id="toast"><div class="t"></div></div>
+<div class="sheet" id="sheet"><div class="inner" id="sheetIn"></div></div>
+
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════
+   연산 도장 — 스킬 단위 적응형 연산 훈련
+   ══════════════════════════════════════════════════════════ */
+
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const red=(n,d)=>{const g=gcd(Math.abs(n),Math.abs(d))||1;return [n/g,d/g];};
+const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const E=e=>`<span class="expo">${e}</span>`;
+const neg=n=>n<0?`(−${-n})`:String(n);
+const M=n=>String(n).replace('-','−');
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const dstr=d=>{const x=d||new Date();return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
+const median=a=>{if(!a.length)return Infinity;const s=[...a].sort((x,y)=>x-y);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const secs=ms=>(ms/1000).toFixed(1)+'초';
+
+/* ── 커리큘럼 ─────────────────────────────────────────── */
+const STAGES=[
+{id:1,name:'수 감각 만들기',sub:'10 만들기 · 가르기와 모으기',skills:[
+  {id:'make10',name:'10의 짝꿍',ex:'7 + □ = 10',t:1700,gen(){const a=R(1,9);return{q:`${a} + @ = 10`,a:10-a,
+    h:`10은 <b>${a}</b>과 <b>${10-a}</b>로 갈라져요. 이 짝꿍 9개를 외워두면 받아올림이 저절로 됩니다.`};}},
+  {id:'split',name:'가르기 · 모으기',ex:'9 = 4 + □',t:2000,gen(){const n=R(5,10),a=R(1,n-1);return{q:`${n} = ${a} + @`,a:n-a,
+    h:`${n}을 두 덩어리로 나누면 ${a}와 <b>${n-a}</b>.`};}},
+  {id:'add1',name:'한 자리 덧셈',ex:'3 + 4',t:1700,gen(){const a=R(1,8),b=R(1,9-a);return{q:`${a} + ${b} = @`,a:a+b,h:`${a}에서 ${b}만큼 이어 세면 <b>${a+b}</b>.`};}},
+  {id:'sub1',name:'한 자리 뺄셈',ex:'8 − 3',t:1700,gen(){const a=R(3,10),b=R(1,a-1);return{q:`${a} − ${b} = @`,a:a-b,h:`${a}를 ${b}와 <b>${a-b}</b>으로 가르면 보여요.`};}},
+  {id:'teen',name:'십몇의 구조',ex:'14 = 10 + □',t:1600,gen(){const b=R(1,9);
+    return Math.random()<.5?{q:`10 + ${b} = @`,a:10+b,h:`10과 ${b}를 붙이면 <b>${10+b}</b>.`}
+                           :{q:`${10+b} = 10 + @`,a:b,h:`${10+b}은 10과 <b>${b}</b>로 되어 있어요.`};}},
+]},
+{id:2,name:'받아올림과 받아내림',sub:'연산 전체의 병목 구간',skills:[
+  {id:'addc',name:'받아올림 덧셈',ex:'8 + 5',t:2400,gen(){const a=R(2,9),b=R(Math.max(2,11-a),9);const k=10-a;
+    return{q:`${a} + ${b} = @`,a:a+b,fact:`a${a}+${b}`,
+    h:`<b>10을 먼저 만드세요.</b> ${a}에 ${k}를 주면 10, ${b}는 ${k}와 ${b-k}로 갈라져요 → 10 + ${b-k} = <span class="ans">${a+b}</span>`};}},
+  {id:'subb',name:'받아내림 뺄셈',ex:'13 − 6',t:2600,gen(){let x,b;do{x=R(2,9);b=R(2,9);}while(x+b<11||x+b>18);const n=x+b;
+    return{q:`${n} − ${b} = @`,a:x,fact:`s${n}-${b}`,
+    h:`<b>10에서 빼세요.</b> ${n}을 10과 ${n-10}으로 나누고, 10 − ${b} = ${10-b}. 여기에 ${n-10}을 더하면 <span class="ans">${x}</span>`};}},
+  {id:'add2_1',name:'두 자리 + 한 자리',ex:'47 + 8',t:3000,gen(){const a=R(11,98),b=R(2,9);
+    return{q:`${a} + ${b} = @`,a:a+b,h:`일의 자리끼리 ${a%10} + ${b} = ${a%10+b}. 십의 자리는 그대로 두고 넘어간 만큼만 올려요 → <span class="ans">${a+b}</span>`};}},
+  {id:'sub2_1',name:'두 자리 − 한 자리',ex:'52 − 7',t:3000,gen(){const a=R(12,99),b=R(2,9);
+    const o=a%10, h = b<=o
+      ? `일의 자리 ${o}에서 ${b}를 그냥 빼면 돼요 → <span class="ans">${a-b}</span>`
+      : `<b>10을 먼저 만드세요.</b> ${a}에서 ${o}를 빼면 ${a-o}, 남은 ${b-o}를 더 빼면 <span class="ans">${a-b}</span>`;
+    return{q:`${a} − ${b} = @`,a:a-b,h};}},
+]},
+{id:3,name:'두 자리 암산',sub:'종이 없이 머릿속에서',skills:[
+  {id:'add22n',name:'두 자리 덧셈 (쉬움)',ex:'34 + 25',t:3400,gen(){const a1=R(1,8),a0=R(0,9),b1=R(1,9-a1),b0=R(0,9-a0);const a=a1*10+a0,b=b1*10+b0;
+    return{q:`${a} + ${b} = @`,a:a+b,h:`십의 자리 ${a1}+${b1}=${a1+b1}, 일의 자리 ${a0}+${b0}=${a0+b0} → <span class="ans">${a+b}</span>`};}},
+  {id:'add22c',name:'두 자리 덧셈 (받아올림)',ex:'48 + 37',t:4400,gen(){const a1=R(1,8),a0=R(1,9),b1=R(1,9-a1),b0=R(10-a0,9);const a=a1*10+a0,b=b1*10+b0;
+    return{q:`${a} + ${b} = @`,a:a+b,h:`<b>큰 자리부터.</b> ${a1*10}+${b1*10}=${(a1+b1)*10}, ${a0}+${b0}=${a0+b0} → ${(a1+b1)*10} + ${a0+b0} = <span class="ans">${a+b}</span>`};}},
+  {id:'sub22n',name:'두 자리 뺄셈 (쉬움)',ex:'68 − 24',t:3600,gen(){const a1=R(2,9),a0=R(1,9),b1=R(1,a1-1),b0=R(0,a0);const a=a1*10+a0,b=b1*10+b0;
+    return{q:`${a} − ${b} = @`,a:a-b,h:`십의 자리 ${a1}−${b1}=${a1-b1}, 일의 자리 ${a0}−${b0}=${a0-b0} → <span class="ans">${a-b}</span>`};}},
+  {id:'sub22b',name:'두 자리 뺄셈 (받아내림)',ex:'62 − 38',t:5000,gen(){const a1=R(2,9),a0=R(0,8),b1=R(1,a1-1),b0=R(a0+1,9);const a=a1*10+a0,b=b1*10+b0;
+    return{q:`${a} − ${b} = @`,a:a-b,h:`<b>빼는 수를 예쁘게.</b> ${b}는 ${(b1+1)*10}보다 ${(b1+1)*10-b} 작아요. ${a}−${(b1+1)*10}=${a-(b1+1)*10}, 여기에 ${(b1+1)*10-b}을 되돌려 더하면 <span class="ans">${a-b}</span>`};}},
+  {id:'missAdd',name:'덧셈의 빈칸',ex:'37 + □ = 52',t:4000,gen(){const a=R(11,60),x=R(5,40);
+    return{q:`${a} + @ = ${a+x}`,a:x,h:`빈칸은 <b>뺄셈</b>으로 찾아요. ${a+x} − ${a} = <span class="ans">${x}</span>`};}},
+  {id:'missSub',name:'뺄셈의 빈칸',ex:'□ − 26 = 15',t:4400,gen(){const b=R(11,50),x=R(5,45);
+    return Math.random()<.5?{q:`@ − ${b} = ${x}`,a:b+x,h:`빼기 전 수 = 결과 + 뺀 수 → ${x} + ${b} = <span class="ans">${b+x}</span>`}
+                           :{q:`${b+x} − @ = ${x}`,a:b,h:`뺀 수 = 처음 수 − 결과 → ${b+x} − ${x} = <span class="ans">${b}</span>`};}},
+]},
+{id:4,name:'곱셈',sub:'구구단부터 두 자리 암산까지',skills:[
+  {id:'gugu25',name:'구구단 2~5단',ex:'4 × 7',t:1500,gen(){const a=R(2,5),b=R(2,9);return{q:`${a} × ${b} = @`,a:a*b,fact:`m${a}x${b}`,h:`${a}단: ${a}씩 ${b}번 → <span class="ans">${a*b}</span>`};}},
+  {id:'gugu69',name:'구구단 6~9단',ex:'7 × 8',t:1800,gen(){const a=R(6,9),b=R(2,9);return{q:`${a} × ${b} = @`,a:a*b,fact:`m${a}x${b}`,h:`${a} × ${b} = <span class="ans">${a*b}</span>. ${a}×${b-1}=${a*(b-1)}에 ${a}를 더한 값이기도 해요.`};}},
+  {id:'guguRev',name:'구구단 거꾸로',ex:'□ × 6 = 42',t:2400,gen(){const a=R(2,9),b=R(2,9);
+    return Math.random()<.5?{q:`@ × ${b} = ${a*b}`,a:a,fact:`m${a}x${b}`,h:`${b}단에서 ${a*b}이 나오는 자리 → <span class="ans">${a}</span>. 나눗셈 ${a*b} ÷ ${b}와 같은 질문이에요.`}
+                           :{q:`${a} × @ = ${a*b}`,a:b,fact:`m${a}x${b}`,h:`${a}단에서 ${a*b}이 나오는 자리 → <span class="ans">${b}</span>`};}},
+  {id:'mul2_1',name:'두 자리 × 한 자리',ex:'34 × 6',t:5500,gen(){const a=R(11,99),b=R(2,9);const t=Math.floor(a/10)*10;
+    return{q:`${a} × ${b} = @`,a:a*b,h:`<b>쪼개서 곱하기.</b> ${t}×${b}=${t*b}, ${a%10}×${b}=${a%10*b} → 합 <span class="ans">${a*b}</span>`};}},
+  {id:'mul2_2',name:'두 자리 × 두 자리',ex:'23 × 14',t:11000,gen(){const a=R(11,49),b=R(11,49);const a1=Math.floor(a/10)*10,a0=a%10;
+    return{q:`${a} × ${b} = @`,a:a*b,h:`${a}를 ${a1}과 ${a0}으로 쪼개요. ${a1}×${b}=${a1*b}, ${a0}×${b}=${a0*b} → 합 <span class="ans">${a*b}</span>`};}},
+]},
+{id:5,name:'나눗셈',sub:'곱셈의 되돌리기 · 나머지',skills:[
+  {id:'div1',name:'기본 나눗셈',ex:'56 ÷ 8',t:2100,gen(){const a=R(2,9),b=R(2,9);return{q:`${a*b} ÷ ${b} = @`,a:a,fact:`m${a}x${b}`,h:`${b} × <span class="ans">${a}</span> = ${a*b}. 나눗셈은 곱셈을 되돌리는 것이에요.`};}},
+  {id:'divRem',name:'나머지 있는 나눗셈',ex:'38 ÷ 5',t:3800,type:'qr',gen(){const b=R(3,9),q=R(2,9),r=R(1,b-1);const n=b*q+r;
+    return{q:`${n} ÷ ${b} = @`,a:{q,r},h:`${b}단에서 ${n}을 넘지 않는 가장 큰 수는 ${b}×${q}=${b*q}. 남은 ${r} → 몫 <span class="ans">${q}</span>, 나머지 <span class="ans">${r}</span>`};}},
+  {id:'div2_1',name:'두 자리 ÷ 한 자리',ex:'84 ÷ 6',t:5000,gen(){const b=R(3,9),q=R(11,40);
+    return{q:`${b*q} ÷ ${b} = @`,a:q,h:`${b}×10=${b*10}을 먼저 빼면 ${b*q-b*10}이 남고, ${b*q-b*10} ÷ ${b} = ${q-10} → <span class="ans">${q}</span>`};}},
+]},
+{id:6,name:'식의 구조',sub:'등호의 뜻 · 계산 순서 · 미지수',skills:[
+  {id:'mixOrder',name:'계산 순서',ex:'5 + 3 × 4',t:3800,gen(){const a=R(2,20),b=R(2,9),c=R(2,9);
+    return{q:`${a} + ${b} × ${c} = @`,a:a+b*c,h:`<b>곱셈이 먼저.</b> ${b}×${c}=${b*c}, 그다음 ${a}+${b*c} = <span class="ans">${a+b*c}</span>`};}},
+  {id:'balance',name:'등호 저울',ex:'6 + 7 = □ + 4',t:4200,gen(){const a=R(3,30),b=R(3,30),d=R(2,Math.min(20,a+b-1));
+    return{q:`${a} + ${b} = @ + ${d}`,a:a+b-d,h:`등호는 "답이 나온다"가 아니라 <b>양쪽이 같다</b>는 뜻. 왼쪽이 ${a+b}이니 오른쪽도 ${a+b} → ${a+b} − ${d} = <span class="ans">${a+b-d}</span>`};}},
+  {id:'paren',name:'괄호',ex:'(8 + 5) × 3',t:4600,gen(){const a=R(2,20),b=R(2,15),c=R(2,9);
+    return{q:`(${a} + ${b}) × ${c} = @`,a:(a+b)*c,h:`괄호 먼저: ${a}+${b}=${a+b}. 그다음 ${a+b}×${c} = <span class="ans">${(a+b)*c}</span>`};}},
+  {id:'eqSolve',name:'한 걸음 방정식',ex:'□ × 4 + 3 = 23',t:6500,gen(){const b=R(2,9),x=R(2,12),c=R(1,20);
+    return{q:`@ × ${b} + ${c} = ${b*x+c}`,a:x,h:`먼저 ${c}를 빼요: ${b*x+c}−${c}=${b*x}. 그다음 ${b}로 나누면 <span class="ans">${x}</span>`};}},
+]},
+{id:7,name:'분수',sub:'약분 · 통분 · 곱셈과 나눗셈',skills:[
+  {id:'fracReduce',name:'약분',ex:'12/18 = □/□',t:5000,type:'fr',gen(){const d=R(2,9),n=R(1,d-1),k=R(2,6);const [rn,rd]=red(n,d);
+    return{q:`${F(n*k,d*k)} = @`,a:{n:rn,d:rd},h:`${n*k}과 ${d*k}의 최대공약수는 ${gcd(n*k,d*k)}. 둘 다 나누면 <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'fracSame',name:'분모가 같은 분수',ex:'3/8 + 2/8',t:5000,type:'fr',gen(){const d=R(3,9);
+    if(Math.random()<.5){const n1=R(1,d-2),n2=R(1,d-1-n1);const[rn,rd]=red(n1+n2,d);
+      return{q:`${F(n1,d)} + ${F(n2,d)} = @`,a:{n:rn,d:rd},h:`분모가 같으면 <b>분자끼리만</b> 더해요. ${n1}+${n2}=${n1+n2} → ${n1+n2}/${d}${rd!==d?` → 약분해서 <span class="ans">${rn}/${rd}</span>`:''}`};}
+    const n1=R(2,d-1),n2=R(1,n1-1);const[rn,rd]=red(n1-n2,d);
+    return{q:`${F(n1,d)} − ${F(n2,d)} = @`,a:{n:rn,d:rd},h:`분자끼리만 빼요. ${n1}−${n2}=${n1-n2} → <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'fracDiff',name:'통분해서 더하기',ex:'1/2 + 1/3',t:8000,type:'fr',gen(){const ds=[2,3,4,5,6,8];let d1=pick(ds),d2=pick(ds);while(d2===d1)d2=pick(ds);
+    const n1=R(1,d1-1),n2=R(1,d2-1);const L=d1*d2/gcd(d1,d2);const[rn,rd]=red(n1*(L/d1)+n2*(L/d2),L);
+    return{q:`${F(n1,d1)} + ${F(n2,d2)} = @`,a:{n:rn,d:rd},h:`분모 ${d1}과 ${d2}의 최소공배수는 <b>${L}</b>. ${n1}/${d1}=${n1*(L/d1)}/${L}, ${n2}/${d2}=${n2*(L/d2)}/${L} → 더하면 <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'fracMul',name:'분수 곱셈',ex:'2/3 × 3/4',t:6500,type:'fr',gen(){const d1=R(2,9),n1=R(1,d1-1),d2=R(2,9),n2=R(1,d2-1);const[rn,rd]=red(n1*n2,d1*d2);
+    return{q:`${F(n1,d1)} × ${F(n2,d2)} = @`,a:{n:rn,d:rd},h:`분자는 분자끼리 ${n1}×${n2}=${n1*n2}, 분모는 분모끼리 ${d1}×${d2}=${d1*d2} → 약분하면 <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'fracDiv',name:'분수 나눗셈',ex:'3/4 ÷ 2/5',t:8000,type:'fr',gen(){const d1=R(2,9),n1=R(1,d1-1),d2=R(2,9),n2=R(1,d2-1);const[rn,rd]=red(n1*d2,d1*n2);
+    return{q:`${F(n1,d1)} ÷ ${F(n2,d2)} = @`,a:{n:rn,d:rd},h:`나누는 분수를 <b>뒤집어 곱해요</b>. ${n1}/${d1} × ${d2}/${n2} = ${n1*d2}/${d1*n2} → <span class="ans">${rn}/${rd}</span>`};}},
+]},
+{id:8,name:'소수',sub:'자리값이 전부다',skills:[
+  {id:'decAdd',name:'소수 덧셈 · 뺄셈',ex:'0.7 + 0.5',t:4000,dec:1,gen(){const A=R(1,90),B=R(1,90);
+    if(Math.random()<.5)return{q:`${(A/10).toFixed(1)} + ${(B/10).toFixed(1)} = @`,a:(A+B)/10,h:`10배씩 크게 보면 ${A}+${B}=${A+B}. 다시 10으로 나누면 <span class="ans">${((A+B)/10).toFixed(1)}</span>`};
+    const [x,y]=A>=B?[A,B]:[B,A];
+    return{q:`${(x/10).toFixed(1)} − ${(y/10).toFixed(1)} = @`,a:(x-y)/10,h:`${x}−${y}=${x-y} → 소수로 되돌리면 <span class="ans">${((x-y)/10).toFixed(1)}</span>`};}},
+  {id:'decShift',name:'10배 · 100배',ex:'3.7 × 100',t:3000,dec:2,gen(){const A=R(11,999)/100;const op=pick([['× 10',10],['× 100',100],['÷ 10',.1]]);
+    const v=Math.round(A*op[1]*1000)/1000;
+    return{q:`${A} ${op[0]} = @`,a:v,h:`소수점이 ${op[1]===0.1?'왼쪽으로 한 칸':op[1]===10?'오른쪽으로 한 칸':'오른쪽으로 두 칸'} 움직여요 → <span class="ans">${v}</span>`};}},
+  {id:'decMul',name:'소수 곱셈',ex:'0.4 × 0.6',t:5000,dec:2,gen(){const a=R(2,9),b=R(2,9);const v=Math.round(a*b)/100;
+    return{q:`0.${a} × 0.${b} = @`,a:v,h:`${a}×${b}=${a*b}. 소수점 아래가 각각 1자리씩, 합쳐서 2자리 → <span class="ans">${v.toFixed(2)}</span>`};}},
+]},
+{id:9,name:'정수 (중등 준비)',sub:'음수가 섞이면 규칙이 보인다',skills:[
+  {id:'negAdd',name:'음수 덧셈 · 뺄셈',ex:'(−7) + 4',t:4000,minus:1,gen(){const a=R(2,15),b=R(2,15);const f=R(1,4);
+    if(f===1)return{q:`${neg(-a)} + ${b} = @`,a:b-a,h:`빚 ${a}에 ${b}가 생긴 셈. ${b}−${a} = <span class="ans">${M(b-a)}</span>`};
+    if(f===2)return{q:`${a} − ${b} = @`,a:a-b,h:`${a}보다 ${b}가 ${b>a?'크니 결과는 음수':'작으니 결과는 양수'} → <span class="ans">${M(a-b)}</span>`};
+    if(f===3)return{q:`${neg(-a)} − ${b} = @`,a:-a-b,h:`둘 다 빚이니 더 깊어져요. −(${a}+${b}) = <span class="ans">${M(-a-b)}</span>`};
+    return{q:`${neg(-a)} − ${neg(-b)} = @`,a:-a+b,h:`<b>빼기 빼기는 더하기.</b> −${a} + ${b} = <span class="ans">${M(b-a)}</span>`};}},
+  {id:'negMul',name:'음수 곱셈 · 나눗셈',ex:'(−6) × (−4)',t:3000,minus:1,gen(){const a=R(2,9),b=R(2,9);const f=R(1,3);
+    if(f===1)return{q:`${neg(-a)} × ${b} = @`,a:-a*b,h:`부호가 <b>다르면 음수</b>. ${a}×${b}=${a*b} → <span class="ans">−${a*b}</span>`};
+    if(f===2)return{q:`${neg(-a)} × ${neg(-b)} = @`,a:a*b,h:`부호가 <b>같으면 양수</b>. → <span class="ans">${a*b}</span>`};
+    return{q:`${neg(-a*b)} ÷ ${b} = @`,a:-a,h:`부호가 다르면 음수. ${a*b}÷${b}=${a} → <span class="ans">−${a}</span>`};}},
+  {id:'powVal',name:'거듭제곱의 밑',ex:'−3² 과 (−3)²',t:3500,minus:1,gen(){const a=R(2,7);const f=R(1,3);
+    if(f===1)return{q:`(−${a})${E(2)} = @`,a:a*a,h:`괄호 안이 통째로 밑이에요. (−${a})×(−${a}) = <span class="ans">${a*a}</span>`};
+    if(f===2)return{q:`−${a}${E(2)} = @`,a:-a*a,h:`<b>밑은 ${a}뿐입니다.</b> ${a}${E(2)}=${a*a}를 구한 뒤 −를 붙여요 → <span class="ans">−${a*a}</span>. (−${a})${E(2)}=${a*a}와 다릅니다.`};
+    return{q:`(−${a})${E(3)} = @`,a:-a*a*a,h:`−를 세 번 곱하면 음수. ${a}${E(3)}=${a*a*a} → <span class="ans">−${a*a*a}</span>`};}},
+]},
+
+{id:10,name:'문자와 식',sub:'중1 · 동류항 · 분배법칙 · 지수법칙',skills:[
+  {id:'monoAdd',name:'동류항 정리',ex:'3x + 5x = □x',t:3000,minus:1,gen(){const a=R(2,12),b=R(2,12);
+    if(Math.random()<.5)return{q:`${a}x + ${b}x = @x`,a:a+b,h:`문자가 같으면 <b>숫자끼리만</b> 더해요. ${a}+${b}=<span class="ans">${a+b}</span>, x는 그대로입니다.`};
+    return{q:`${a}x − ${b}x = @x`,a:a-b,h:`x가 ${a}개 있다가 ${b}개 없어진 셈. ${a}−${b}=<span class="ans">${M(a-b)}</span>`};}},
+  {id:'distrib',name:'분배법칙',ex:'3(2x + 5)',t:4500,gen(){const k=R(2,9),a=R(2,9),b=R(2,12);
+    if(Math.random()<.5)return{q:`${k}(${a}x + ${b}) = @x + ${k*b}`,a:k*a,
+      h:`괄호 앞의 ${k}를 <b>안쪽 둘 다에</b> 곱해요. ${k}×${a}=<span class="ans">${k*a}</span>`};
+    return{q:`${k}(${a}x + ${b}) = ${k*a}x + @`,a:k*b,h:`${k}를 ${b}에 곱하는 것도 잊지 마세요 → <span class="ans">${k*b}</span>`};}},
+  {id:'subst',name:'식의 값',ex:'x = 4일 때 3x − 5',t:4500,minus:1,gen(){const v=R(2,9),a=R(2,9),b=R(1,15),p=Math.random()<.5;
+    const val=p?a*v+b:a*v-b;
+    return{lead:`x = ${v} 일 때`,q:`${a}x ${p?'+':'−'} ${b} = @`,a:val,
+      h:`x 자리에 ${v}를 넣어요. ${a}×${v}=${a*v}, 그다음 ${a*v} ${p?'+':'−'} ${b} = <span class="ans">${M(val)}</span>`};}},
+  {id:'powLaw',name:'지수법칙',ex:'x⁵ × x³ = x□',t:3500,gen(){const f=R(1,3);
+    if(f===1){const a=R(2,7),b=R(2,7);return{q:`x${E(a)} × x${E(b)} = x${E('@')}`,a:a+b,
+      h:`x를 ${a}번, 또 ${b}번 곱하니 모두 ${a+b}번. 같은 문자끼리 곱하면 <b>지수를 더해요</b> → <span class="ans">${a+b}</span>`};}
+    if(f===2){const b=R(2,6),a=b+R(1,6);return{q:`x${E(a)} ÷ x${E(b)} = x${E('@')}`,a:a-b,
+      h:`나누면 <b>지수를 빼요</b>. ${a}−${b}=<span class="ans">${a-b}</span>`};}
+    const a=R(2,5),b=R(2,4);return{q:`(x${E(a)})${E(b)} = x${E('@')}`,a:a*b,
+      h:`x${E(a)}를 ${b}번 곱하는 것이니 지수를 <b>곱해요</b>. ${a}×${b}=<span class="ans">${a*b}</span>`};}},
+  {id:'monoMul',name:'단항식 곱셈',ex:'2x³ × 4x² = □x⁵',t:5000,gen(){const a=R(2,9),b=R(2,9),p=R(1,5),q=R(1,5);
+    return{q:`${a}x${E(p)} × ${b}x${E(q)} = @x${E(p+q)}`,a:a*b,
+      h:`<b>계수는 곱하고, 지수는 더합니다.</b> ${a}×${b}=<span class="ans">${a*b}</span>, 지수는 ${p}+${q}=${p+q}`};}},
+]},
+
+{id:11,name:'일차방정식',sub:'중1 · 이항하고 정리하기',skills:[
+  {id:'eqSimple',name:'한 번 이항',ex:'x + 7 = 12',t:3500,minus:1,gen(){const x=R(-9,15),b=R(2,15);
+    if(Math.random()<.5)return{lead:`x + ${b} = ${M(x+b)}`,q:`x = @`,a:x,
+      h:`양변에서 ${b}를 빼요. ${M(x+b)} − ${b} = <span class="ans">${M(x)}</span>`};
+    return{lead:`x − ${b} = ${M(x-b)}`,q:`x = @`,a:x,h:`양변에 ${b}를 더해요. ${M(x-b)} + ${b} = <span class="ans">${M(x)}</span>`};}},
+  {id:'eqTwoStep',name:'두 걸음 방정식',ex:'3x − 5 = 16',t:6000,minus:1,gen(){const a=R(2,9),x=R(-8,12),b=R(1,20),p=Math.random()<.5;
+    const rhs=p?a*x+b:a*x-b;
+    return{lead:`${a}x ${p?'+':'−'} ${b} = ${M(rhs)}`,q:`x = @`,a:x,
+      h:`먼저 ${b}를 ${p?'빼면':'더하면'} ${a}x = ${M(a*x)}. 그다음 ${a}로 나누면 <span class="ans">${M(x)}</span>`};}},
+  {id:'eqBoth',name:'양변에 문자',ex:'5x + 3 = 2x + 18',t:9000,minus:1,gen(){let a,c;do{a=R(2,9);c=R(1,8);}while(a===c);
+    const x=R(-7,10),b=R(1,15);const d=(a-c)*x+b;
+    return{lead:`${a}x + ${b} = ${c}x ${d<0?'− '+(-d):'+ '+d}`,q:`x = @`,a:x,
+      h:`<b>문자는 왼쪽, 숫자는 오른쪽으로.</b> ${a}x − ${c}x = ${M(d)} − ${b} → ${a-c}x = ${M(d-b)} → <span class="ans">${M(x)}</span>`};}},
+  {id:'eqParen',name:'괄호와 분수 계수',ex:'4(x − 3) = 20',t:9000,minus:1,gen(){
+    if(Math.random()<.5){const k=R(2,7),b=R(1,9),x=R(-5,12),p=Math.random()<.5;
+      return{lead:`${k}(x ${p?'+':'−'} ${b}) = ${M(k*(p?x+b:x-b))}`,q:`x = @`,a:x,
+        h:`양변을 ${k}로 나누면 x ${p?'+':'−'} ${b} = ${M(p?x+b:x-b)}. 그다음 ${b}를 ${p?'빼면':'더하면'} <span class="ans">${M(x)}</span>`};}
+    const d=R(2,6),m=R(-4,6),b=R(1,12),p=Math.random()<.5;const x=d*m;
+    return{lead:`${F('x',d)} ${p?'+':'−'} ${b} = ${M(p?m+b:m-b)}`,q:`x = @`,a:x,
+      h:`<b>양변에 ${d}를 곱해</b> 분모를 없애요. x ${p?'+':'−'} ${b*d} = ${M((p?m+b:m-b)*d)} → <span class="ans">${M(x)}</span>`};}},
+]},
+
+{id:12,name:'함수',sub:'중1~2 · 대응 · 기울기 · 정비례와 반비례',skills:[
+  {id:'funcVal',name:'함숫값 구하기',ex:'f(x)=2x+3, f(4)',t:4500,minus:1,gen(){const a=R(2,9),b=R(1,12),v=R(-5,9),p=Math.random()<.5;
+    return{lead:`f(x) = ${a}x ${p?'+':'−'} ${b}`,q:`f(${M(v)}) = @`,a:p?a*v+b:a*v-b,
+      h:`x 자리마다 ${M(v)}를 넣어요. ${a}×(${M(v)})=${M(a*v)}, ${M(a*v)} ${p?'+':'−'} ${b} = <span class="ans">${M(p?a*v+b:a*v-b)}</span>`};}},
+  {id:'funcInv',name:'거꾸로 x 찾기',ex:'f(x)=3x−2, f(x)=10',t:7000,minus:1,gen(){const a=R(2,9),b=R(1,12),x=R(-5,9),p=Math.random()<.5;
+    const y=p?a*x+b:a*x-b;
+    return{lead:`f(x) = ${a}x ${p?'+':'−'} ${b} , f(x) = ${M(y)}`,q:`x = @`,a:x,
+      h:`${a}x ${p?'+':'−'} ${b} = ${M(y)} 인 방정식을 풀면 돼요. ${a}x = ${M(a*x)} → <span class="ans">${M(x)}</span>`};}},
+  {id:'slope',name:'기울기',ex:'(1,2)와 (4,11)',t:8000,minus:1,gen(){let m;do{m=R(-5,6);}while(m===0);
+    const x1=R(-4,4),x2=x1+R(1,5),n=R(-5,5);const y1=m*x1+n,y2=m*x2+n;
+    return{lead:`두 점 (${M(x1)}, ${M(y1)}) , (${M(x2)}, ${M(y2)})`,q:`기울기 = @`,a:m,
+      h:`기울기 = <b>y가 변한 양 ÷ x가 변한 양</b>. (${M(y2)}−${M(y1)}) ÷ (${M(x2)}−${M(x1)}) = ${M(y2-y1)} ÷ ${x2-x1} = <span class="ans">${M(m)}</span>`};}},
+  {id:'propFn',name:'정비례와 반비례',ex:'y = 12/x, x = 3',t:6000,minus:1,gen(){
+    if(Math.random()<.5){const a=R(2,9),v=R(-6,9);
+      return{lead:`y = ${a}x`,q:`x = ${M(v)} 일 때  y = @`,a:a*v,
+        h:`x가 ${M(v)}이면 y는 그 ${a}배. <span class="ans">${M(a*v)}</span> — x가 2배가 되면 y도 2배가 되는 관계입니다.`};}
+    const v=R(2,9),y=R(2,9);const k=v*y;
+    return{lead:`y = ${F(k,'x')}`,q:`x = ${v} 일 때  y = @`,a:y,
+      h:`x 자리에 ${v}를 넣으면 ${k} ÷ ${v} = <span class="ans">${y}</span> — x가 2배가 되면 y는 절반이 되는 관계입니다.`};}},
+]},
+];
+const ALL={}; STAGES.forEach(s=>s.skills.forEach(k=>{k.stage=s.id; ALL[k.id]=k;}));
+const SKIDS=Object.keys(ALL);
+
+/* ── 저장소 ───────────────────────────────────────────── */
+const KEY='yeonsan-dojang-v1';
+let DB, S;
+function blank(name){return{name,skills:{},facts:{},days:{},unlocked:1,placed:false,best:0,
+  settings:{n:30,auto:true,sound:true}};}
+function load(){
+  try{DB=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){DB=null;}
+  if(!DB||!DB.p||!DB.p.length)DB={p:[blank('학습자')],i:0,theme:'auto'};
+  if(DB.i>=DB.p.length)DB.i=0;
+  S=DB.p[DB.i];
+  S.settings=Object.assign({n:30,auto:true,sound:true},S.settings||{});
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}}
+const rec=id=>S.skills[id]||(S.skills[id]={n:0,c:0,streak:0,t:[],m:false});
+const acc=r=>r.n?r.c/r.n:0;
+const med=r=>median(r.t);
+const isM=id=>!!(S.skills[id]&&S.skills[id].m);
+const rusty=id=>{const r=S.skills[id];return r&&r.m&&r.streak===0;};
+
+/* ── 소리 ─────────────────────────────────────────────── */
+let AC=null;
+function beep(kind){
+  if(!S.settings.sound)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.connect(g);g.connect(AC.destination);o.type='sine';
+    const t=AC.currentTime;
+    if(kind==='ok'){o.frequency.setValueAtTime(660,t);o.frequency.setValueAtTime(990,t+.07);g.gain.setValueAtTime(.09,t);}
+    else if(kind==='up'){o.frequency.setValueAtTime(523,t);o.frequency.setValueAtTime(784,t+.09);o.frequency.setValueAtTime(1047,t+.18);g.gain.setValueAtTime(.1,t);}
+    else{o.frequency.setValueAtTime(196,t);g.gain.setValueAtTime(.08,t);}
+    g.gain.exponentialRampToValueAtTime(.0001,t+(kind==='up'?.34:.16));
+    o.start(t);o.stop(t+(kind==='up'?.36:.2));
+  }catch(e){}
+}
+
+/* ── 화면 전환 ───────────────────────────────────────── */
+let cur='home';
+function go(id){
+  cur=id;
+  $$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+  $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===id));
+  $('#tabs').classList.toggle('hide',id==='drill'||id==='result');
+  window.scrollTo(0,0);
+  ({home:drawHome,curri:drawCurri,stats:drawStats,setting:drawSetting}[id]||(()=>{}))();
+}
+$$('#tabs button').forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+let tT;
+function toast(msg){const t=$('#toast');$('.t',t).textContent=msg;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
+function sheet(html){$('#sheetIn').innerHTML=html;$('#sheet').classList.add('on');}
+function closeSheet(){$('#sheet').classList.remove('on');}
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')closeSheet();};
+
+/* ── 스트릭 ──────────────────────────────────────────── */
+function streak(){
+  let n=0;const d=new Date();
+  if(!(S.days[dstr(d)]&&S.days[dstr(d)].q>=10))d.setDate(d.getDate()-1);
+  for(;;){const k=dstr(d);if(S.days[k]&&S.days[k].q>=10){n++;d.setDate(d.getDate()-1);}else break;}
+  return n;
+}
+function unlockedSkills(){return SKIDS.filter(id=>ALL[id].stage<=S.unlocked);}
+function stageDone(sid){return STAGES.find(s=>s.id===sid).skills.every(k=>isM(k.id));}
+function tryUnlock(){
+  let changed=false;
+  while(S.unlocked<STAGES.length&&stageDone(S.unlocked)){S.unlocked++;changed=true;}
+  return changed;
+}
+
+/* ══ 오늘 화면 ══════════════════════════════════════════ */
+function drawHome(){
+  const today=S.days[dstr()]||{q:0,c:0,ms:0};
+  const goal=S.settings.n;
+  const pct=Math.min(1,today.q/goal);
+  const st=streak();
+  const mastered=SKIDS.filter(isM).length;
+  const stg=STAGES.find(s=>s.id===S.unlocked);
+  const weak=weakest(3);
+  const C=2*Math.PI*46;
+
+  $('#home').innerHTML=`
+  <div class="stack">
+    <div class="card hero">
+      <div class="eyebrow">${dstr().replace(/-/g,'. ')}</div>
+      <h2>${today.q>=goal?'오늘 몫은 끝났어요':'오늘의 10분'}</h2>
+      <p class="tiny" style="margin:2px 0 0">${stg?`지금 단계 ${stg.id}. ${stg.name}`:''}</p>
+      <div class="ringwrap">
+        <div class="ring">
+          <svg width="104" height="104"><circle cx="52" cy="52" r="46" fill="none" stroke="var(--line)" stroke-width="9"/>
+          <circle cx="52" cy="52" r="46" fill="none" stroke="${today.q>=goal?'var(--ok)':'var(--brand)'}" stroke-width="9" stroke-linecap="round"
+            stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}" style="transition:stroke-dashoffset .6s ease"/></svg>
+          <div class="val"><b>${today.q}</b><span>/ ${goal}문제</span></div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="k">연속 학습</span><span class="v">${st}일${st>=3?' 🔥':''}</span></div>
+          <div class="fact"><span class="k">오늘 정확도</span><span class="v">${today.q?Math.round(today.c/today.q*100)+'%':'—'}</span></div>
+          <div class="fact"><span class="k">숙달한 기술</span><span class="v">${mastered} / ${SKIDS.length}</span></div>
+        </div>
+      </div>
+    </div>
+
+    ${!S.placed?`<button class="btn sec" id="placeBtn">📐 진단 테스트 먼저 하기 · 2분</button>`:''}
+    <button class="btn pri" id="startBtn">${today.q>=goal?'한 판 더 풀기':'오늘 연습 시작'} →</button>
+
+    ${weak.length?`<div class="card pad">
+      <div class="eyebrow">지금 약한 곳</div>
+      <div class="stack" style="gap:9px; margin-top:10px">
+        ${weak.map(w=>`<div class="row"><div style="flex:1;min-width:0">
+          <b style="font-size:14px;font-weight:600">${ALL[w.id].name}</b>
+          <div class="tiny mono">${esc(ALL[w.id].ex)} · 정확도 ${Math.round(w.acc*100)}% · ${isFinite(w.md)?secs(w.md):'—'}</div>
+        </div><button class="play" data-drill="${w.id}">집중</button></div>`).join('')}
+      </div>
+    </div>`:''}
+
+    <div class="card pad">
+      <div class="row" style="margin-bottom:10px"><div class="eyebrow" style="flex:1">최근 10주</div>
+        <span class="tiny">${Object.keys(S.days).length}일 학습</span></div>
+      ${grassHTML()}
+    </div>
+  </div>`;
+
+  const pb=$('#placeBtn'); if(pb)pb.onclick=startPlacement;
+  $('#startBtn').onclick=()=>startSession(null);
+  $$('#home [data-drill]').forEach(b=>b.onclick=()=>startSession(b.dataset.drill));
+}
+function grassHTML(){
+  const days=70,out=[];const d=new Date();d.setDate(d.getDate()-days+1);
+  for(let i=0;i<days;i++){const k=dstr(d);const q=(S.days[k]||{}).q||0;
+    const l=q>=S.settings.n?3:q>=15?2:q>0?1:0;
+    out.push(`<i data-l="${l}" title="${k} · ${q}문제"></i>`);d.setDate(d.getDate()+1);}
+  return `<div class="grass" style="grid-template-columns:repeat(14,1fr)">${out.join('')}</div>`;
+}
+function weakest(n){
+  return unlockedSkills().map(id=>{const r=rec(id);return{id,acc:acc(r),md:med(r),n:r.n};})
+    .filter(x=>x.n>=4&&!(isM(x.id)&&x.acc>=.9))
+    .map(x=>Object.assign(x,{bad:(1-x.acc)*2+(isFinite(x.md)?Math.min(1.2,x.md/ALL[x.id].t-1):0)}))
+    .filter(x=>x.bad>0.06).sort((a,b)=>b.bad-a.bad).slice(0,n);
+}
+
+/* ══ 출제 엔진 ══════════════════════════════════════════ */
+function makeQ(id){
+  const sk=ALL[id];const o=sk.gen();
+  return{sk:id,q:o.q,a:o.a,h:o.h,fact:o.fact,lead:o.lead||'',type:sk.type||'num',
+         dec:sk.dec||0,minus:!!sk.minus,t:sk.t};
+}
+function chooseSkill(){
+  const pool=unlockedSkills();
+  const w=pool.map(id=>{
+    const r=rec(id);const a=acc(r);const m=med(r);
+    let x;
+    if(!r.n) x=3.2;                                  // 처음 보는 기술 우선
+    else if(!r.m){ x=1.2+(1-a)*3+(isFinite(m)?Math.min(1.5,Math.max(0,m/ALL[id].t-1)):.5); }
+    else x=rusty(id)?.6:.14;                          // 숙달 후엔 가끔 복습
+    if(ALL[id].stage===S.unlocked)x*=1.35;            // 현재 단계에 무게
+    return x;
+  });
+  let sum=w.reduce((a,b)=>a+b,0),r=Math.random()*sum;
+  for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i];}
+  return pool[pool.length-1];
+}
+
+/* ══ 세션 ══════════════════════════════════════════════ */
+let SESS=null;
+function startSession(only,opts){
+  SESS={i:0,n:(opts&&opts.n)||S.settings.n,only,queue:[],log:[],wrong:[],extra:0,
+        t0:Date.now(),correct:0,msSum:0,newM:[],place:false,pi:0,pfail:0};
+  go('drill');nextQ();
+}
+function startPlacement(){
+  const probe=['add1','teen','addc','subb','add22c','sub22b','gugu25','gugu69','mul2_1','div1','divRem',
+               'mixOrder','balance','fracSame','fracDiff','decAdd','negAdd','monoAdd','subst','eqTwoStep','funcVal'];
+  SESS={i:0,n:probe.length,only:null,queue:[],log:[],wrong:[],extra:0,t0:Date.now(),correct:0,msSum:0,newM:[],
+        place:true,probe,pi:0,pfail:0};
+  go('drill');nextQ();
+}
+
+let Q=null,fields=[''],fi=0,qStart=0,paceTimer=null,locked=false;
+
+function nextQ(){
+  if(SESS.place){
+    if(SESS.pi>=SESS.probe.length||SESS.pfail>=2)return endSession();
+    Q=makeQ(SESS.probe[SESS.pi]);
+  }else{
+    if(SESS.i>=SESS.n&&!SESS.queue.some(x=>x.due<=SESS.i))return endSession();
+    const due=SESS.queue.findIndex(x=>x.due<=SESS.i);
+    if(due>=0){Q=SESS.queue.splice(due,1)[0].q;}
+    else if(SESS.i>=SESS.n)return endSession();
+    else Q=makeQ(SESS.only||chooseSkill());
+  }
+  fields=Q.type==='fr'||Q.type==='qr'?['','']:[''];
+  fi=0;locked=false;
+  drawDrill();
+  qStart=performance.now();
+  runPace();
+}
+
+function blankHTML(){
+  if(Q.type==='fr')return `<span class="fr"><i class="bl" data-i="0"></i><i class="bl" data-i="1"></i></span>`;
+  if(Q.type==='qr')return `<span class="qr"><small>몫</small><span class="bl" data-i="0"></span><small>나머지</small><span class="bl" data-i="1"></span></span>`;
+  return `<span class="bl" data-i="0"></span>`;
+}
+function drawDrill(){
+  const sk=ALL[Q.sk];
+  const total=SESS.place?SESS.probe.length:SESS.n;
+  const done=SESS.place?SESS.pi:Math.min(SESS.i,SESS.n);
+  const aux=Q.type==='fr'||Q.type==='qr'?'▸':Q.dec?'.':Q.minus?'−':'';
+  $('#drill').innerHTML=`
+  <div class="dhead">
+    <button class="iconbtn" id="quitBtn" aria-label="그만두기">✕</button>
+    <div class="progline"><i style="width:${done/total*100}%"></i></div>
+    <span class="dstat">${done}/${total}</span>
+    <span class="dstat" style="color:var(--ok)">○${SESS.correct}</span>
+  </div>
+  <div class="card qcard" id="qcard">
+    <div class="qskill">${SESS.place?'진단':esc(sk.name)}</div>
+    ${Q.lead?`<div class="lead">${Q.lead}</div>`:''}
+    <div class="expr" id="expr">${Q.q.replace('@',blankHTML())}</div>
+    <div class="pace"><i id="paceBar"></i></div>
+    <div id="hintBox"></div>
+  </div>
+  <div class="pad9" id="pad">
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key sm" data-k="del">⌫</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key sm ${aux?'':'off'}" data-k="${aux==='▸'?'next':aux==='.'?'dot':aux==='−'?'neg':''}">${aux||''}</button>
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key sm" data-k="hint" title="모르겠어요">💡</button>
+    <button class="key wide" data-k="0">0</button>
+    <button class="key go" data-k="ok">확인</button>
+  </div>`;
+  $('#quitBtn').onclick=()=>{clearInterval(paceTimer);if(SESS.i>0)endSession();else{SESS=null;go('home');}};
+  $$('#pad .key').forEach(b=>b.onclick=()=>press(b.dataset.k));
+  $$('#expr .bl').forEach(el=>el.onclick=()=>{fi=+el.dataset.i;paint();});
+  paint();
+}
+function paint(){
+  $$('#expr .bl').forEach(el=>{
+    const i=+el.dataset.i;
+    el.textContent=(fields[i]||'').replace('-','−');
+    el.classList.toggle('active',i===fi&&!locked);
+  });
+}
+function runPace(){
+  clearInterval(paceTimer);
+  const bar=$('#paceBar');if(!bar)return;
+  paceTimer=setInterval(()=>{
+    const e=performance.now()-qStart, p=Math.min(1,e/Q.t);
+    bar.style.width=(p*100)+'%';
+    bar.style.background=p<.7?'var(--ok)':p<1?'var(--gold)':'var(--mark)';
+    if(p>=1&&e>Q.t*2.4)clearInterval(paceTimer);
+  },60);
+}
+function press(k){
+  if(!k)return;
+  if(locked){if(k==='ok')nextQ();return;}
+  if(k==='ok'){ if(fields.length>1&&fi===0&&fields[1]===''){fi=1;paint();return;} submit(); return; }
+  if(k==='next'){fi=(fi+1)%fields.length;paint();return;}
+  if(k==='del'){fields[fi]=fields[fi].slice(0,-1);paint();return;}
+  if(k==='hint'){giveUp();return;}
+  if(k==='neg'){fields[fi]=fields[fi].startsWith('-')?fields[fi].slice(1):'-'+fields[fi];paint();return;}
+  if(k==='dot'){if(!fields[fi].includes('.'))fields[fi]+=fields[fi]?'.':'0.';paint();return;}
+  if(/^[0-9]$/.test(k)){
+    if(fields[fi].replace('-','').replace('.','').length>=6)return;
+    fields[fi]+=k;paint();
+    if(S.settings.auto&&fields.length===1&&Q.type==='num'&&!Q.minus&&!Q.dec
+       &&fields[0].length===String(Q.a).length){setTimeout(()=>{if(!locked)submit();},110);}
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(cur!=='drill')return;
+  if(/^[0-9]$/.test(e.key))return press(e.key);
+  if(e.key==='Backspace'){e.preventDefault();return press('del');}
+  if(e.key==='Enter'){e.preventDefault();return press('ok');}
+  if(e.key==='.'||e.key===',')return press('dot');
+  if(e.key==='-'||e.key==='_')return press('neg');
+  if(fields.length>1&&(e.key==='Tab'||e.key==='ArrowRight')){e.preventDefault();return press('next');}
+  if(e.key==='?'||e.key==='/')return press('hint');
+});
+
+function grade(){
+  if(Q.type==='fr'){
+    const n=parseInt(fields[0],10),d=parseInt(fields[1],10);
+    if(!isFinite(n)||!isFinite(d)||d===0)return{ok:false};
+    if(n===Q.a.n&&d===Q.a.d)return{ok:true};
+    if(n*Q.a.d===Q.a.n*d)return{ok:false,near:'값은 맞았지만 <b>약분</b>이 남았어요.'};
+    return{ok:false};
+  }
+  if(Q.type==='qr'){
+    const q=parseInt(fields[0],10),r=parseInt(fields[1],10);
+    return{ok:q===Q.a.q&&r===Q.a.r};
+  }
+  const v=parseFloat(fields[0]);
+  if(!isFinite(v))return{ok:false};
+  return{ok:Math.abs(v-Q.a)<1e-9};
+}
+function ansText(){
+  if(Q.type==='fr')return `${Q.a.n}/${Q.a.d}`;
+  if(Q.type==='qr')return `몫 ${Q.a.q} · 나머지 ${Q.a.r}`;
+  return M(Q.a);
+}
+function myText(){
+  if(Q.type==='fr')return fields[0]&&fields[1]?`${fields[0]}/${fields[1]}`:'—';
+  if(Q.type==='qr')return fields[0]!==''?`몫 ${fields[0]||'?'} · 나머지 ${fields[1]||'?'}`:'—';
+  return fields[0]?fields[0].replace('-','−'):'—';
+}
+
+function giveUp(){
+  if(locked)return;
+  finish(false,performance.now()-qStart,true);
+}
+function submit(){
+  const empty=fields.findIndex(f=>f===''||f==='-');
+  if(empty>=0){fi=empty;paint();return;}
+  finish(null,performance.now()-qStart,false);
+}
+function finish(force,ms,gave){
+  locked=true;clearInterval(paceTimer);
+  const g=force===false?{ok:false,gave:true}:grade();
+  const ok=g.ok;
+  if(ok)SESS.correct++;
+  SESS.i++;SESS.msSum+=ms;
+  SESS.log.push({sk:Q.sk,ok,ms});
+
+  if(!SESS.place){
+    const r=rec(Q.sk);r.n++;
+    if(ok){r.c++;r.streak++;r.t.push(Math.round(ms));if(r.t.length>10)r.t.shift();}
+    else r.streak=0;
+    if(Q.fact){const f=S.facts[Q.fact]||(S.facts[Q.fact]={n:0,c:0,t:[]});f.n++;if(ok){f.c++;f.t.push(Math.round(ms));if(f.t.length>6)f.t.shift();}}
+    if(!r.m&&r.streak>=5&&r.n>=10&&r.t.length>=5&&median(r.t)<=ALL[Q.sk].t){r.m=true;SESS.newM.push(Q.sk);}
+    const d=S.days[dstr()]||(S.days[dstr()]={q:0,c:0,ms:0});
+    d.q++;if(ok)d.c++;d.ms+=Math.round(ms);
+    save();
+  }else{
+    if(ok&&!gave)SESS.pfail=0;else SESS.pfail++;
+    SESS.pi++;
+    if(ok&&!gave)SESS.best=Math.max(SESS.best||0,ALL[Q.sk].stage);
+  }
+
+  const card=$('#qcard');
+  card.classList.add(ok?'good':'bad');
+  card.insertAdjacentHTML('afterbegin',`<div class="verdict ${ok?'o':'x'}">${ok?'○':'✕'}</div>`);
+  beep(ok?(SESS.newM.length&&SESS.newM[SESS.newM.length-1]===Q.sk?'up':'ok'):'no');
+
+  if(ok){
+    if(SESS.newM.length&&SESS.newM[SESS.newM.length-1]===Q.sk)toast(`숙달! ${ALL[Q.sk].name}`);
+    setTimeout(()=>{if(locked)nextQ();},430);
+  }else{
+    SESS.wrong.push({q:Q.q,lead:Q.lead,my:myText(),ans:ansText(),h:Q.h,sk:Q.sk});
+    // 틀린 문제는 곧 다시, 같은 기술의 새 문제는 조금 뒤에.
+    // 계속 틀려도 세션이 무한히 길어지지 않도록 추가 문항 수에 상한을 둔다.
+    if(!SESS.place&&SESS.extra<Math.max(6,Math.ceil(SESS.n*.6))){
+      Q.tries=(Q.tries||0)+1;
+      if(Q.tries<=2){SESS.queue.push({q:Q,due:SESS.i+2});SESS.extra++;}
+      if(Q.tries===1){SESS.queue.push({q:makeQ(Q.sk),due:SESS.i+8});SESS.extra++;}
+    }
+    $('#hintBox').innerHTML=`<div class="hint">
+      ${g.near?g.near+'<br>':''}
+      ${gave?'':`내 답 <span class="ans">${esc(myText())}</span> · `}정답 <span class="ans">${ansText()}</span>
+      <div style="margin-top:6px">${Q.h}</div></div>`;
+    $$('#pad .key').forEach(b=>{if(b.dataset.k!=='ok')b.classList.add('off');});
+    $('#pad .go').textContent='다음 →';
+    paint();
+  }
+}
+
+/* ══ 결과 ══════════════════════════════════════════════ */
+function endSession(){
+  clearInterval(paceTimer);
+  const s=SESS;
+  if(s.place){
+    S.placed=true;
+    S.unlocked=Math.max(1,Math.min(STAGES.length,(s.best||1)));
+    save();
+    sheet(`<h2 style="font-size:20px">진단 결과</h2>
+      <p class="muted" style="font-size:14px">${s.correct}/${s.i}문제를 맞혔어요. <b>단계 ${S.unlocked}. ${STAGES.find(x=>x.id===S.unlocked).name}</b>부터 시작할게요.</p>
+      <p class="tiny">언제든 커리큘럼 화면에서 다른 단계를 골라 연습할 수 있어요.</p>
+      <button class="btn pri" onclick="closeSheet();go('home')">좋아요</button>`);
+    go('home');SESS=null;return;
+  }
+  const unlocked=tryUnlock();save();
+  const n=s.i,c=s.correct,avg=n?s.msSum/n:0;
+  // 같은 문제를 여러 번 틀렸으면 다시보기에는 한 번만 남긴다
+  const seen=new Set();
+  s.wrong=s.wrong.filter(w=>{const k=w.lead+'|'+w.q;return seen.has(k)?false:(seen.add(k),true);});
+  const perSkill={};s.log.forEach(l=>{(perSkill[l.sk]=perSkill[l.sk]||{n:0,c:0}).n++;if(l.ok)perSkill[l.sk].c++;});
+  const worst=Object.entries(perSkill).filter(([,v])=>v.c<v.n).sort((a,b)=>(a[1].c/a[1].n)-(b[1].c/b[1].n)).slice(0,3);
+
+  $('#result').innerHTML=`<div class="stack" style="padding-top:14px">
+    <div class="card pad" style="text-align:center">
+      <div class="eyebrow">오늘 연습 끝</div>
+      <div class="big" style="margin:8px 0 2px; color:${c/n>=.9?'var(--ok)':c/n>=.7?'var(--ink)':'var(--mark)'}">${Math.round(c/n*100)}<span style="font-size:22px">%</span></div>
+      <div class="tiny">${c} / ${n}문제 정답</div>
+      <div class="grid3" style="margin-top:16px">
+        <div class="cell"><b>${secs(avg)}</b><span>문제당 평균</span></div>
+        <div class="cell"><b>${Math.round((Date.now()-s.t0)/60000)}분</b><span>걸린 시간</span></div>
+        <div class="cell"><b>${streak()}일</b><span>연속 학습</span></div>
+      </div>
+    </div>
+    ${s.newM.length?`<div class="card pad" style="border-color:var(--ok)">
+      <div class="eyebrow" style="color:var(--ok)">새로 숙달</div>
+      <div class="chips" style="margin-top:8px">${[...new Set(s.newM)].map(id=>`<span class="chip ok">✓ ${esc(ALL[id].name)}</span>`).join('')}</div>
+      <p class="tiny" style="margin:9px 0 0">정확도와 <b>속도</b>를 함께 통과했을 때만 숙달로 인정해요.</p></div>`:''}
+    ${unlocked?`<div class="card pad" style="border-color:var(--gold)">
+      <div class="eyebrow" style="color:var(--gold)">단계 열림</div>
+      <h3 style="font-size:17px;margin-top:6px">${S.unlocked}. ${STAGES.find(x=>x.id===S.unlocked).name}</h3>
+      <p class="tiny">${STAGES.find(x=>x.id===S.unlocked).sub}</p></div>`:''}
+    ${s.wrong.length?`<div class="card pad">
+      <div class="eyebrow">틀린 문제 다시 보기 · ${s.wrong.length}개</div>
+      <div class="revlist" style="margin-top:10px">
+        ${s.wrong.map(w=>`<div class="rev">
+          ${w.lead?`<div class="tiny mono" style="margin-bottom:2px">${w.lead}</div>`:''}
+          <div class="e">${w.q.replace('@',`<s>${esc(w.my)}</s>`)} <span style="color:var(--ok)">${w.ans}</span></div>
+          <div class="h">${w.h}</div></div>`).join('')}
+      </div></div>`:`<div class="card pad" style="text-align:center"><b style="color:var(--ok)">한 문제도 안 틀렸어요.</b></div>`}
+    ${worst.length?`<div class="card pad"><div class="eyebrow">다음에 더 볼 것</div>
+      <div class="chips" style="margin-top:8px">${worst.map(([id,v])=>`<span class="chip mark">${esc(ALL[id].name)} ${v.c}/${v.n}</span>`).join('')}</div></div>`:''}
+    <div class="row" style="gap:9px">
+      <button class="btn sec" id="againBtn">한 판 더</button>
+      <button class="btn pri" id="doneBtn">마치기</button>
+    </div>
+  </div>`;
+  go('result');
+  $('#againBtn').onclick=()=>startSession(s.only);
+  $('#doneBtn').onclick=()=>go('home');
+  SESS=null;
+}
+
+/* ══ 커리큘럼 ══════════════════════════════════════════ */
+function drawCurri(){
+  $('#curri').innerHTML=`<div class="stack" style="padding-top:6px">
+    <div class="card pad">
+      <div class="eyebrow">전체 진도</div>
+      <div class="row" style="margin-top:8px"><div class="progline" style="height:8px"><i style="width:${SKIDS.filter(isM).length/SKIDS.length*100}%;background:var(--ok)"></i></div>
+      <span class="dstat">${SKIDS.filter(isM).length}/${SKIDS.length}</span></div>
+      <p class="tiny" style="margin:9px 0 0">잠긴 단계도 눌러서 <b>미리 연습</b>할 수 있어요. 학교 진도에 맞춰 자유롭게 쓰세요.</p>
+    </div>
+    ${STAGES.map(st=>{
+      const done=st.skills.filter(k=>isM(k.id)).length;
+      const lock=st.id>S.unlocked;
+      return `<details class="stage" data-lock="${lock?1:0}" ${st.id===S.unlocked?'open':''}>
+        <summary>
+          <span class="no">${st.id}</span>
+          <span class="nm"><b>${esc(st.name)}${lock?' 🔒':''}</b><span>${esc(st.sub)}</span></span>
+          <span class="bar"><i style="width:${done/st.skills.length*100}%"></i></span>
+          <span class="dstat">${done}/${st.skills.length}</span>
+        </summary>
+        <div class="slist">${st.skills.map(k=>{
+          const r=rec(k.id);const m=med(r);
+          return `<div class="srow">
+            <span class="sn">${isM(k.id)?'<span style="color:var(--ok)">✓</span> ':''}${esc(k.name)}<em>${esc(k.ex)}</em></span>
+            <span class="met">${r.n?Math.round(acc(r)*100)+'%':'—'}<br><span style="color:${isFinite(m)?(m<=k.t?'var(--ok)':'var(--gold)'):'var(--ink3)'}">${isFinite(m)?secs(m):'목표 '+secs(k.t)}</span></span>
+            <button class="play" data-drill="${k.id}">연습</button>
+          </div>`;}).join('')}</div>
+      </details>`;}).join('')}
+  </div>`;
+  $$('#curri [data-drill]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.drill;
+    sheet(`<h2 style="font-size:19px">${esc(ALL[id].name)}</h2>
+      <p class="muted" style="font-size:14px;margin:4px 0 2px">${esc(ALL[id].ex)} 같은 문제만 골라서 풀어요.</p>
+      <p class="tiny">목표 속도 ${secs(ALL[id].t)} · 정확도 90% 이상이면 숙달로 인정됩니다.</p>
+      <div class="row" style="gap:9px;margin-top:14px">
+        <button class="btn sec" data-n="15">15문제</button>
+        <button class="btn pri" data-n="30">30문제</button></div>`);
+    $$('#sheetIn [data-n]').forEach(x=>x.onclick=()=>{closeSheet();startSession(id,{n:+x.dataset.n});});
+  });
+}
+
+/* ══ 기록 ══════════════════════════════════════════════ */
+function drawStats(){
+  const rows=SKIDS.map(id=>({id,r:rec(id)})).filter(x=>x.r.n>0)
+    .sort((a,b)=>ALL[a.id].stage-ALL[b.id].stage);
+  const tot=rows.reduce((s,x)=>s+x.r.n,0), totc=rows.reduce((s,x)=>s+x.r.c,0);
+  const days=Object.entries(S.days).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);
+
+  $('#stats').innerHTML=`<div class="stack" style="padding-top:6px">
+    <div class="card pad">
+      <div class="grid3">
+        <div class="cell"><b>${tot}</b><span>총 푼 문제</span></div>
+        <div class="cell"><b>${tot?Math.round(totc/tot*100):0}%</b><span>전체 정확도</span></div>
+        <div class="cell"><b>${streak()}</b><span>연속 학습일</span></div>
+      </div>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">구구단 지도</div>
+      <p class="tiny" style="margin:5px 0 12px">빠르고 정확한 칸은 초록, 느린 칸은 노랑, 자주 틀리는 칸은 빨강. <b>비어 있는 칸이 아직 안 만난 구구단</b>이에요.</p>
+      <div class="scroll">${heatHTML()}</div>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">기술별 기록</div>
+      <div class="scroll" style="margin-top:8px">
+      ${rows.length?`<table class="tbl"><thead><tr><th>기술</th><th style="text-align:right">문항</th><th style="text-align:right">정확도</th><th style="text-align:right">속도 / 목표</th><th></th></tr></thead><tbody>
+        ${rows.map(x=>{const m=med(x.r);const t=ALL[x.id].t;
+          return `<tr><td>${esc(ALL[x.id].name)}<div class="tiny mono">${esc(ALL[x.id].ex)}</div></td>
+          <td class="n">${x.r.n}</td>
+          <td class="n" style="color:${acc(x.r)>=.9?'var(--ok)':acc(x.r)>=.75?'var(--ink)':'var(--mark)'}">${Math.round(acc(x.r)*100)}%</td>
+          <td class="n" style="color:${isFinite(m)&&m<=t?'var(--ok)':'var(--gold)'}">${isFinite(m)?secs(m):'—'}<span style="color:var(--ink3)"> / ${secs(t)}</span></td>
+          <td>${x.r.m?'<span class="chip ok">숙달</span>':''}</td></tr>`;}).join('')}
+      </tbody></table>`:'<p class="tiny">아직 기록이 없어요. 오늘 연습을 한 번 해보세요.</p>'}
+      </div>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">최근 학습일</div>
+      <div class="stack" style="gap:0;margin-top:6px">
+      ${days.length?days.map(([k,v])=>`<div class="fact"><span class="k mono">${k}</span>
+        <span class="v">${v.q}문제 · ${Math.round(v.c/v.q*100)}% · ${secs(v.ms/v.q)}</span></div>`).join(''):'<p class="tiny">기록 없음</p>'}
+      </div>
+    </div>
+  </div>`;
+}
+function heatHTML(){
+  let h='<div class="heat"><b>×</b>';
+  for(let b=2;b<=9;b++)h+=`<u>${b}</u>`;
+  for(let a=2;a<=9;a++){h+=`<b>${a}</b>`;
+    for(let b=2;b<=9;b++){
+      const f=S.facts['m'+a+'x'+b]||S.facts['m'+b+'x'+a];
+      let s='',lab=a*b;
+      if(f&&f.n){const ac=f.c/f.n,mm=median(f.t);
+        s=ac<.8?'bad':(isFinite(mm)&&mm<=2200?'ok':'mid');}
+      h+=`<span data-s="${s}" title="${a} × ${b} = ${a*b}${f?` · ${f.c}/${f.n}`:' · 미학습'}">${lab}</span>`;
+    }
+  }
+  return h+'</div>';
+}
+
+/* ══ 설정 ══════════════════════════════════════════════ */
+function drawSetting(){
+  $('#setting').innerHTML=`<div class="stack" style="padding-top:6px">
+    <div class="card pad">
+      <div class="eyebrow">연습</div>
+      <div class="opt"><span class="lab"><b>한 번에 풀 문제 수</b><span>10~15분이면 30문제쯤</span></span>
+        <div class="seg" id="segN">${[20,30,40,60].map(n=>`<button data-n="${n}" class="${S.settings.n===n?'on':''}">${n}</button>`).join('')}</div></div>
+      <div class="opt"><span class="lab"><b>자동 넘김</b><span>자릿수를 다 채우면 바로 채점</span></span>
+        <div class="seg" id="segA"><button data-v="1" class="${S.settings.auto?'on':''}">켬</button><button data-v="0" class="${!S.settings.auto?'on':''}">끔</button></div></div>
+      <div class="opt"><span class="lab"><b>소리</b><span>정답·오답 효과음</span></span>
+        <div class="seg" id="segS"><button data-v="1" class="${S.settings.sound?'on':''}">켬</button><button data-v="0" class="${!S.settings.sound?'on':''}">끔</button></div></div>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">학습자</div>
+      <div class="stack" style="gap:8px;margin-top:10px">
+        ${DB.p.map((p,i)=>`<div class="row"><span style="flex:1;font-weight:${i===DB.i?600:400}">${esc(p.name)}${i===DB.i?' <span class="chip brand">사용 중</span>':''}</span>
+          ${i===DB.i?'':`<button class="play" data-sw="${i}">전환</button>`}
+          ${DB.p.length>1?`<button class="btn ghost" data-rm="${i}">삭제</button>`:''}</div>`).join('')}
+      </div>
+      <div class="row" style="margin-top:12px"><input class="txt" id="newName" placeholder="새 학습자 이름" maxlength="10">
+        <button class="btn sec" style="width:auto;padding:9px 14px" id="addP">추가</button></div>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">진도</div>
+      <div class="opt"><span class="lab"><b>지금 단계</b><span>${S.unlocked}. ${esc(STAGES.find(s=>s.id===S.unlocked).name)}</span></span>
+        <div class="seg"><button id="dn">−</button><button id="up">+</button></div></div>
+      <button class="btn sec" id="reTest" style="margin-top:12px">진단 테스트 다시 하기</button>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">백업</div>
+      <p class="tiny" style="margin:6px 0 8px">기록은 이 브라우저에만 저장돼요. 아래 글자를 복사해 두면 다른 기기에서 되살릴 수 있어요.</p>
+      <textarea class="txt" id="dump" readonly>${esc(JSON.stringify(DB))}</textarea>
+      <div class="row" style="gap:8px;margin-top:8px">
+        <button class="btn sec" id="copyBtn">복사</button>
+        <button class="btn sec" id="restoreBtn">붙여넣어 복원</button>
+      </div>
+      <button class="btn ghost" id="wipe" style="margin-top:6px;color:var(--mark)">이 학습자 기록 모두 지우기</button>
+    </div>
+
+    <p class="tiny" style="text-align:center;padding:4px 0 10px">연산 도장 · 오프라인에서도 동작합니다</p>
+  </div>`;
+
+  $$('#segN button').forEach(b=>b.onclick=()=>{S.settings.n=+b.dataset.n;save();drawSetting();});
+  $$('#segA button').forEach(b=>b.onclick=()=>{S.settings.auto=b.dataset.v==='1';save();drawSetting();});
+  $$('#segS button').forEach(b=>b.onclick=()=>{S.settings.sound=b.dataset.v==='1';save();drawSetting();});
+  $$('[data-sw]').forEach(b=>b.onclick=()=>{DB.i=+b.dataset.sw;save();load();drawSetting();syncWho();toast('학습자를 바꿨어요');});
+  $$('[data-rm]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.rm;
+    sheet(`<h3 style="font-size:17px">${esc(DB.p[i].name)} 기록을 지울까요?</h3><p class="tiny">되돌릴 수 없어요.</p>
+      <div class="row" style="gap:9px;margin-top:14px"><button class="btn sec" onclick="closeSheet()">그만두기</button>
+      <button class="btn pri" id="yes" style="background:var(--mark)">지우기</button></div>`);
+    $('#yes').onclick=()=>{DB.p.splice(i,1);if(DB.i>=DB.p.length)DB.i=0;save();load();closeSheet();drawSetting();syncWho();};
+  });
+  $('#addP').onclick=()=>{const v=$('#newName').value.trim();if(!v)return;
+    DB.p.push(blank(v));DB.i=DB.p.length-1;save();load();drawSetting();syncWho();toast(v+' 추가됨');};
+  $('#up').onclick=()=>{if(S.unlocked<STAGES.length){S.unlocked++;save();drawSetting();}};
+  $('#dn').onclick=()=>{if(S.unlocked>1){S.unlocked--;save();drawSetting();}};
+  $('#reTest').onclick=startPlacement;
+  $('#copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(DB));toast('복사했어요');}
+    catch(e){$('#dump').select();toast('길게 눌러 복사하세요');}};
+  $('#restoreBtn').onclick=()=>{
+    sheet(`<h3 style="font-size:17px">백업 복원</h3><p class="tiny">복사해 둔 글자를 붙여넣으세요. 지금 기록은 덮어써집니다.</p>
+      <textarea class="txt" id="inbox" style="height:130px"></textarea>
+      <div class="row" style="gap:9px;margin-top:12px"><button class="btn sec" onclick="closeSheet()">그만두기</button>
+      <button class="btn pri" id="doRes">복원</button></div>`);
+    $('#doRes').onclick=()=>{try{const o=JSON.parse($('#inbox').value);
+      if(!o.p||!Array.isArray(o.p))throw 0;DB=o;save();load();closeSheet();syncWho();drawSetting();toast('복원했어요');}
+      catch(e){toast('형식이 맞지 않아요');}};
+  };
+  $('#wipe').onclick=()=>{
+    sheet(`<h3 style="font-size:17px">${esc(S.name)}의 기록을 모두 지울까요?</h3><p class="tiny">되돌릴 수 없어요.</p>
+      <div class="row" style="gap:9px;margin-top:14px"><button class="btn sec" onclick="closeSheet()">그만두기</button>
+      <button class="btn pri" id="yes2" style="background:var(--mark)">지우기</button></div>`);
+    $('#yes2').onclick=()=>{DB.p[DB.i]=blank(S.name);save();load();closeSheet();drawSetting();toast('초기화했어요');};
+  };
+}
+
+/* ══ 크롬 ══════════════════════════════════════════════ */
+function syncWho(){$('#whoName').textContent=S.name;}
+$('#whoBtn').onclick=()=>go('setting');
+$('#themeBtn').onclick=()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const nx=cur==='dark'?'light':cur==='light'?'':'dark';
+  if(nx)document.documentElement.setAttribute('data-theme',nx);
+  else document.documentElement.removeAttribute('data-theme');
+  DB.theme=nx||'auto';save();
+  toast(nx==='dark'?'어두운 화면':nx==='light'?'밝은 화면':'기기 설정 따름');
+};
+
+load();
+if(DB.theme&&DB.theme!=='auto')document.documentElement.setAttribute('data-theme',DB.theme);
+syncWho();
+drawHome();
+</script>
+</body>
+</html>
