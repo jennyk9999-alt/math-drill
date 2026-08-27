@@ -159,6 +159,9 @@ header.top{
 /* 지수 */
 .expo{font-size:.58em; vertical-align:super; line-height:0; margin-left:.03em; font-weight:600}
 .expo .bl{min-width:1.7em; border-bottom-width:2px}
+/* 대분수 */
+.mx{display:inline-flex; align-items:center; gap:.1em; vertical-align:middle}
+.mx > .bl{min-width:1.1em}
 
 .pace{height:4px; border-radius:99px; background:var(--card2); margin:20px 0 0; overflow:hidden; border:1px solid var(--line)}
 .pace i{display:block; height:100%; width:0; background:var(--ok)}
@@ -206,8 +209,28 @@ header.top{
 .srow .sn{flex:1; min-width:0; font-size:14px}
 .srow .sn em{font-style:normal; display:block; font-size:12px; color:var(--ink3); font-family:"IBM Plex Mono",monospace}
 .srow .met{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink2); text-align:right; font-variant-numeric:tabular-nums; min-width:62px}
-.play{border:1px solid var(--line); border-radius:8px; padding:5px 11px; font-size:12.5px; font-weight:600; color:var(--brand)}
+.play{border:1px solid var(--line); border-radius:8px; padding:5px 11px; font-size:12.5px; font-weight:600; color:var(--brand); flex:none}
 .play:hover{background:var(--brand-soft)}
+
+/* 기술 찾기 */
+.findbar{display:flex; align-items:center; gap:10px; padding:5px 7px 5px 14px;
+  border:1px solid var(--line); border-radius:12px; background:var(--card); box-shadow:var(--shadow)}
+.findbar:focus-within{outline:2px solid var(--brand); outline-offset:2px}
+.findbar .ic{font-size:17px; line-height:1; flex:none}
+.findbar input{font:inherit; flex:1 1 auto; min-width:0; font-size:15px; font-weight:500;
+  min-height:40px; padding:2px 0; border:none; background:transparent; color:var(--ink)}
+.findbar input:focus{outline:none}
+.findbar input::placeholder{color:var(--ink3); font-weight:400}
+.findbar input::-webkit-search-cancel-button{-webkit-appearance:none; appearance:none}
+.findbar .x{border:1px solid var(--line); border-radius:9px; min-width:38px; min-height:38px;
+  background:var(--card2); color:var(--ink2); font-size:13px; flex:none}
+.findbar .x:hover{border-color:var(--brand); color:var(--brand)}
+.gchip{font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; flex:none;
+  background:var(--brand-soft); color:var(--brand); white-space:nowrap;
+  font-family:"IBM Plex Mono",monospace}
+.seg2{display:flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card)}
+.seg2 button{flex:1; padding:9px 8px; font-size:13.5px; font-weight:600; color:var(--ink2)}
+.seg2 button.on{background:var(--brand); color:var(--brand-ink)}
 
 /* ── 기록 ───────────────────────────────────────────────── */
 .heat{display:grid; grid-template-columns:auto repeat(8,1fr); gap:3px; font-family:"IBM Plex Mono",monospace; font-size:11px}
@@ -313,6 +336,11 @@ const gcd=(a,b)=>b?gcd(b,a%b):a;
 const red=(n,d)=>{const g=gcd(Math.abs(n),Math.abs(d))||1;return [n/g,d/g];};
 const F=(n,d)=>`<span class="fr"><i>${n}</i><i>${d}</i></span>`;
 const E=e=>`<span class="expo">${e}</span>`;
+const MX=(w,n,d)=>`<span class="mx">${w}${F(n,d)}</span>`;   // 대분수
+// 이미 약분된 진분수 하나. 대분수는 분수 부분이 기약이어야 답이 하나로 정해진다.
+function properFrac(maxD,minD){let d,n;do{d=R(minD||3,maxD||9);n=R(1,d-1);}while(gcd(n,d)!==1);return[n,d];}
+// 가분수를 대분수로
+const toMix=(n,d)=>{const w=Math.floor(n/d);const[rn,rd]=red(n-w*d,d);return{w,n:rn,d:rd};};
 const neg=n=>n<0?`(−${-n})`:String(n);
 const M=n=>String(n).replace('-','−');
 const $=(s,r)=>(r||document).querySelector(s);
@@ -350,7 +378,7 @@ const STAGES=[
       : `<b>10을 먼저 만드세요.</b> ${a}에서 ${o}를 빼면 ${a-o}, 남은 ${b-o}를 더 빼면 <span class="ans">${a-b}</span>`;
     return{q:`${a} − ${b} = @`,a:a-b,h};}},
 ]},
-{id:3,name:'두 자리 암산',sub:'종이 없이 머릿속에서',skills:[
+{id:3,name:'여러 자리 덧셈·뺄셈',sub:'두 자리는 머릿속으로, 세 자리는 자리별로',skills:[
   {id:'add22n',name:'두 자리 덧셈 (쉬움)',ex:'34 + 25',t:3400,gen(){const a1=R(1,8),a0=R(0,9),b1=R(1,9-a1),b0=R(0,9-a0);const a=a1*10+a0,b=b1*10+b0;
     return{q:`${a} + ${b} = @`,a:a+b,h:`십의 자리 ${a1}+${b1}=${a1+b1}, 일의 자리 ${a0}+${b0}=${a0+b0} → <span class="ans">${a+b}</span>`};}},
   {id:'add22c',name:'두 자리 덧셈 (받아올림)',ex:'48 + 37',t:4400,gen(){const a1=R(1,8),a0=R(1,9),b1=R(1,9-a1),b0=R(10-a0,9);const a=a1*10+a0,b=b1*10+b0;
@@ -364,6 +392,32 @@ const STAGES=[
   {id:'missSub',name:'뺄셈의 빈칸',ex:'□ − 26 = 15',t:4400,gen(){const b=R(11,50),x=R(5,45);
     return Math.random()<.5?{q:`@ − ${b} = ${x}`,a:b+x,h:`빼기 전 수 = 결과 + 뺀 수 → ${x} + ${b} = <span class="ans">${b+x}</span>`}
                            :{q:`${b+x} − @ = ${x}`,a:b,h:`뺀 수 = 처음 수 − 결과 → ${b+x} − ${x} = <span class="ans">${b}</span>`};}},
+  {id:'add3num',name:'세 수의 계산',ex:'3 + 5 + 4 · 12 − 5 + 3',t:4000,gen(){const f=R(1,3);
+    if(f===1){const a=R(2,20),b=R(2,15),c=R(2,15);
+      return{q:`${a} + ${b} + ${c} = @`,a:a+b+c,
+        h:`<b>앞에서부터 차례로.</b> ${a}+${b}=${a+b}, 거기에 ${c}를 더하면 <span class="ans">${a+b+c}</span>`};}
+    if(f===2){const c=R(2,15),b=R(2,15),a=b+R(1,20);
+      return{q:`${a} − ${b} + ${c} = @`,a:a-b+c,
+        h:`<b>+와 −만 있으면 앞에서부터.</b> ${a}−${b}=${a-b}, 거기에 ${c}를 더하면 <span class="ans">${a-b+c}</span>`};}
+    const b=R(2,15),c=R(2,15),a=b+c+R(1,20);
+    return{q:`${a} − ${b} − ${c} = @`,a:a-b-c,
+      h:`두 번 빼요. ${a}−${b}=${a-b}, 거기서 ${c}를 더 빼면 <span class="ans">${a-b-c}</span>`};}},
+  {id:'placeVal',name:'자릿값',ex:'3475에서 4는 얼마',t:5000,gen(){
+    // 고른 숫자가 그 수 안에 딱 한 번만 나와야 답이 하나로 정해진다 (9976의 "9"는 안 됨)
+    let n,pos,digit,s;
+    do{ n=R(1000,9999); pos=R(0,3); digit=Math.floor(n/Math.pow(10,pos))%10; s=String(n);
+    }while(digit===0 || s.split('').filter(c=>c===String(digit)).length!==1);
+    const NAMES=['일','십','백','천'], unit=Math.pow(10,pos);
+    return{q:`${n}에서 ${digit}은 @을 나타냅니다`,a:digit*unit,
+      h:`${digit}이 <b>${NAMES[pos]}의 자리</b>에 있으니 ${digit}×${unit} = <span class="ans">${digit*unit}</span>`};}},
+  {id:'add3',name:'세 자리 덧셈',ex:'347 + 285',t:7000,gen(){const a=R(101,899),b=R(101,899);
+    const ah=Math.floor(a/100)*100, bh=Math.floor(b/100)*100;
+    return{q:`${a} + ${b} = @`,a:a+b,
+      h:`<b>백의 자리부터.</b> ${ah}+${bh}=${ah+bh}, 남은 ${a%100}+${b%100}=${a%100+b%100} → 합쳐서 <span class="ans">${a+b}</span>`};}},
+  {id:'sub3',name:'세 자리 뺄셈',ex:'512 − 268',t:8000,gen(){const a=R(201,999),b=R(101,a-10);
+    const bh=Math.floor(b/100)*100;
+    return{q:`${a} − ${b} = @`,a:a-b,
+      h:`<b>큰 덩어리부터 빼세요.</b> ${a}−${bh}=${a-bh}, 거기서 ${b%100}을 더 빼면 <span class="ans">${a-b}</span>`};}},
 ]},
 {id:4,name:'곱셈',sub:'구구단부터 두 자리 암산까지',skills:[
   {id:'gugu25',name:'구구단 2~5단',ex:'4 × 7',t:1500,gen(){const a=R(2,5),b=R(2,9);return{q:`${a} × ${b} = @`,a:a*b,fact:`m${a}x${b}`,h:`${a}단: ${a}씩 ${b}번 → <span class="ans">${a*b}</span>`};}},
@@ -375,6 +429,14 @@ const STAGES=[
     return{q:`${a} × ${b} = @`,a:a*b,h:`<b>쪼개서 곱하기.</b> ${t}×${b}=${t*b}, ${a%10}×${b}=${a%10*b} → 합 <span class="ans">${a*b}</span>`};}},
   {id:'mul2_2',name:'두 자리 × 두 자리',ex:'23 × 14',t:11000,gen(){const a=R(11,49),b=R(11,49);const a1=Math.floor(a/10)*10,a0=a%10;
     return{q:`${a} × ${b} = @`,a:a*b,h:`${a}를 ${a1}과 ${a0}으로 쪼개요. ${a1}×${b}=${a1*b}, ${a0}×${b}=${a0*b} → 합 <span class="ans">${a*b}</span>`};}},
+  {id:'mul3_1',name:'세 자리 × 한 자리',ex:'243 × 6',t:9000,gen(){const a=R(101,999),b=R(2,9);
+    const h2=Math.floor(a/100)*100, t2=Math.floor(a/10)%10*10, o2=a%10;
+    return{q:`${a} × ${b} = @`,a:a*b,
+      h:`<b>자리마다 나눠 곱해요.</b> ${h2}×${b}=${h2*b}, ${t2}×${b}=${t2*b}, ${o2}×${b}=${o2*b} → 모두 더하면 <span class="ans">${a*b}</span>`};}},
+  {id:'mul3_2',name:'세 자리 × 두 자리',ex:'243 × 15',t:20000,gen(){const a=R(101,999),b=R(11,99);
+    const b1=Math.floor(b/10)*10, b0=b%10;
+    return{q:`${a} × ${b} = @`,a:a*b,
+      h:`${b}를 ${b1}과 ${b0}으로 쪼개요. ${a}×${b1}=${a*b1}, ${a}×${b0}=${a*b0} → 합 <span class="ans">${a*b}</span>`};}},
 ]},
 {id:5,name:'나눗셈',sub:'곱셈의 되돌리기 · 나머지',skills:[
   {id:'div1',name:'기본 나눗셈',ex:'56 ÷ 8',t:2100,gen(){const a=R(2,9),b=R(2,9);return{q:`${a*b} ÷ ${b} = @`,a:a,fact:`m${a}x${b}`,h:`${b} × <span class="ans">${a}</span> = ${a*b}. 나눗셈은 곱셈을 되돌리는 것이에요.`};}},
@@ -382,10 +444,57 @@ const STAGES=[
     return{q:`${n} ÷ ${b} = @`,a:{q,r},h:`${b}단에서 ${n}을 넘지 않는 가장 큰 수는 ${b}×${q}=${b*q}. 남은 ${r} → 몫 <span class="ans">${q}</span>, 나머지 <span class="ans">${r}</span>`};}},
   {id:'div2_1',name:'두 자리 ÷ 한 자리',ex:'84 ÷ 6',t:5000,gen(){const b=R(3,9),q=R(11,40);
     return{q:`${b*q} ÷ ${b} = @`,a:q,h:`${b}×10=${b*10}을 먼저 빼면 ${b*q-b*10}이 남고, ${b*q-b*10} ÷ ${b} = ${q-10} → <span class="ans">${q}</span>`};}},
+  {id:'div3_1',name:'세 자리 ÷ 한 자리',ex:'427 ÷ 6',t:9000,type:'qr',gen(){
+    let b,q,r,n; do{b=R(3,9);q=R(20,140);r=R(0,b-1);n=b*q+r;}while(n>999||n<100);
+    return{q:`${n} ÷ ${b} = @`,a:{q,r},
+      h:`${b}×100=${b*100}${b*100<=n?'을 먼저 덜어내고':'은 너무 크니 십의 자리부터'}, ${b}×${q}=${b*q}까지 갈 수 있어요. 남는 건 ${r} → 몫 <span class="ans">${q}</span>, 나머지 <span class="ans">${r}</span>`};}},
+  {id:'div3_2',name:'세 자리 ÷ 두 자리',ex:'528 ÷ 24',t:14000,type:'qr',gen(){
+    let b,q,r,n; do{b=R(11,49);q=R(3,40);r=R(0,b-1);n=b*q+r;}while(n>999||n<100);
+    return{q:`${n} ÷ ${b} = @`,a:{q,r},
+      h:`${b}을 <b>어림</b>해서 몇 번 들어가는지 봐요. ${b}×${q}=${b*q}, ${n}에서 빼면 ${r}이 남아요 → 몫 <span class="ans">${q}</span>, 나머지 <span class="ans">${r}</span>`};}},
 ]},
-{id:6,name:'식의 구조',sub:'등호의 뜻 · 계산 순서 · 미지수',skills:[
-  {id:'mixOrder',name:'계산 순서',ex:'5 + 3 × 4',t:3800,gen(){const a=R(2,20),b=R(2,9),c=R(2,9);
-    return{q:`${a} + ${b} × ${c} = @`,a:a+b*c,h:`<b>곱셈이 먼저.</b> ${b}×${c}=${b*c}, 그다음 ${a}+${b*c} = <span class="ans">${a+b*c}</span>`};}},
+{id:6,name:'큰 수와 약수·배수',sub:'자릿값 · 최대공약수 · 최소공배수 · 소인수분해',skills:[
+  {id:'bigNum',name:'큰 수의 자릿값',ex:'1억은 1000만의 □배',t:6000,gen(){
+    const T=[['만','1만','1000',10],['십만','1십만','1만',10],['1억','1억','1000만',10],
+             ['1억','1억','100만',100],['1조','1조','1억',10000],['1조','1조','1000억',10]];
+    if(Math.random()<.6){const p=pick(T);
+      return{q:`${p[1]}은 ${p[2]}의 @배`,a:p[3],
+        h:`자리가 한 칸 올라갈 때마다 10배예요. ${p[1]} ÷ ${p[2]} = <span class="ans">${p[3]}</span>`};}
+    const Z=[['1만',4],['10만',5],['100만',6],['1000만',7],['1억',8],['10억',9],['1조',12]];
+    const z=pick(Z);
+    return{q:`${z[0]}은 1 뒤에 0이 @개`,a:z[1],
+      h:`만은 0이 4개, 억은 8개, 조는 12개. ${z[0]} → <span class="ans">${z[1]}개</span>`};}},
+  {id:'divisorCnt',name:'약수의 개수',ex:'24의 약수는 몇 개',t:9000,gen(){const n=R(12,60);
+    const ds=[];for(let i=1;i<=n;i++)if(n%i===0)ds.push(i);
+    return{q:`${n}의 약수는 모두 @개`,a:ds.length,
+      h:`${n} = ${ds.filter(d=>d*d<=n).map(d=>`${d}×${n/d}`).join(', ')} → 약수는 ${ds.join(', ')} 해서 <span class="ans">${ds.length}개</span>`};}},
+  {id:'gcdS',name:'최대공약수',ex:'12와 18의 최대공약수',t:7000,gen(){const g=R(2,9),a=g*R(2,9),b=g*R(2,9);
+    const G=gcd(a,b);
+    return{q:`${a}와 ${b}의 최대공약수 = @`,a:G,
+      h:`두 수를 <b>동시에</b> 나누는 가장 큰 수예요. ${a}=${G}×${a/G}, ${b}=${G}×${b/G} → <span class="ans">${G}</span>`};}},
+  {id:'lcmS',name:'최소공배수',ex:'4와 6의 최소공배수',t:8000,gen(){const a=R(2,12),b=R(2,12);
+    const L=a*b/gcd(a,b);
+    return{q:`${a}와 ${b}의 최소공배수 = @`,a:L,
+      h:`두 수의 배수 중 <b>가장 작은 공통</b>. ${a}×${b}=${a*b}을 최대공약수 ${gcd(a,b)}로 나누면 <span class="ans">${L}</span>`};}},
+  {id:'primeFac',name:'소인수분해',ex:'18 = 2 × 3^□',t:8000,gen(){
+    const ps=[2,3,5,7];let p=pick(ps),q2=pick(ps);while(q2===p)q2=pick(ps);
+    const x=R(1,3),y=R(1,2);const n=Math.pow(p,x)*Math.pow(q2,y);
+    return{q:`${n} = ${p}${E(x)} × ${q2}${E('@')}`,a:y,
+      h:`${n}을 더 이상 나눠지지 않을 때까지 쪼개면 ${p}가 ${x}번, ${q2}가 ${y}번 → <span class="ans">${y}</span>`};}},
+]},
+
+{id:7,name:'식의 구조',sub:'등호의 뜻 · 계산 순서 · 미지수',skills:[
+  {id:'mixOrder',name:'계산 순서',ex:'5 + 3 × 4 · 20 − 12 ÷ 4',t:4200,gen(){
+    const f=R(1,4);
+    if(f===1){const a=R(2,20),b=R(2,9),c=R(2,9);
+      return{q:`${a} + ${b} × ${c} = @`,a:a+b*c,h:`<b>곱셈이 먼저.</b> ${b}×${c}=${b*c}, 그다음 ${a}+${b*c} = <span class="ans">${a+b*c}</span>`};}
+    if(f===2){const b=R(2,9),c=R(2,9),a=b*c+R(1,20);
+      return{q:`${a} − ${b} × ${c} = @`,a:a-b*c,h:`<b>곱셈이 먼저.</b> ${b}×${c}=${b*c}, 그다음 ${a}−${b*c} = <span class="ans">${a-b*c}</span>`};}
+    if(f===3){const c=R(2,9),q=R(2,9),a=R(2,30);
+      return{q:`${a} + ${c*q} ÷ ${c} = @`,a:a+q,h:`<b>나눗셈도 덧셈보다 먼저.</b> ${c*q}÷${c}=${q}, 그다음 ${a}+${q} = <span class="ans">${a+q}</span>`};}
+    const b=R(2,9),c=R(2,9),e=R(2,9),q=R(2,9);
+    return{q:`${b} × ${c} + ${e*q} ÷ ${e} = @`,a:b*c+q,
+      h:`<b>곱셈과 나눗셈을 먼저, 그다음 덧셈.</b> ${b}×${c}=${b*c}, ${e*q}÷${e}=${q} → ${b*c}+${q} = <span class="ans">${b*c+q}</span>`};}},
   {id:'balance',name:'등호 저울',ex:'6 + 7 = □ + 4',t:4200,gen(){const a=R(3,30),b=R(3,30),d=R(2,Math.min(20,a+b-1));
     return{q:`${a} + ${b} = @ + ${d}`,a:a+b-d,h:`등호는 "답이 나온다"가 아니라 <b>양쪽이 같다</b>는 뜻. 왼쪽이 ${a+b}이니 오른쪽도 ${a+b} → ${a+b} − ${d} = <span class="ans">${a+b-d}</span>`};}},
   {id:'paren',name:'괄호',ex:'(8 + 5) × 3',t:4600,gen(){const a=R(2,20),b=R(2,15),c=R(2,9);
@@ -401,13 +510,74 @@ const STAGES=[
       return{q:`${F(n1,d)} + ${F(n2,d)} = @`,a:{n:rn,d:rd},h:`분모가 같으면 <b>분자끼리만</b> 더해요. ${n1}+${n2}=${n1+n2} → ${n1+n2}/${d}${rd!==d?` → 약분해서 <span class="ans">${rn}/${rd}</span>`:''}`};}
     const n1=R(2,d-1),n2=R(1,n1-1);const[rn,rd]=red(n1-n2,d);
     return{q:`${F(n1,d)} − ${F(n2,d)} = @`,a:{n:rn,d:rd},h:`분자끼리만 빼요. ${n1}−${n2}=${n1-n2} → <span class="ans">${rn}/${rd}</span>`};}},
-  {id:'fracDiff',name:'통분해서 더하기',ex:'1/2 + 1/3',t:8000,type:'fr',gen(){const ds=[2,3,4,5,6,8];let d1=pick(ds),d2=pick(ds);while(d2===d1)d2=pick(ds);
-    const n1=R(1,d1-1),n2=R(1,d2-1);const L=d1*d2/gcd(d1,d2);const[rn,rd]=red(n1*(L/d1)+n2*(L/d2),L);
-    return{q:`${F(n1,d1)} + ${F(n2,d2)} = @`,a:{n:rn,d:rd},h:`분모 ${d1}과 ${d2}의 최소공배수는 <b>${L}</b>. ${n1}/${d1}=${n1*(L/d1)}/${L}, ${n2}/${d2}=${n2*(L/d2)}/${L} → 더하면 <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'fracDiff',name:'통분해서 더하고 빼기',ex:'1/2 + 1/3 · 3/4 − 1/6',t:8000,type:'fr',gen(){
+    const ds=[2,3,4,5,6,8];
+    let d1,d2,n1,n2,L,A,B;
+    do{ d1=pick(ds); d2=pick(ds); if(d2===d1)continue;
+        n1=R(1,d1-1); n2=R(1,d2-1); L=d1*d2/gcd(d1,d2);
+        A=n1*(L/d1); B=n2*(L/d2);
+    }while(d1===d2||A===B);          // 뺄셈이 0이 되는 짝은 피한다
+    if(Math.random()<.5){const[rn,rd]=red(A+B,L);
+      return{q:`${F(n1,d1)} + ${F(n2,d2)} = @`,a:{n:rn,d:rd},
+        h:`분모 ${d1}과 ${d2}의 최소공배수는 <b>${L}</b>. ${n1}/${d1}=${A}/${L}, ${n2}/${d2}=${B}/${L} → 더하면 <span class="ans">${rn}/${rd}</span>`};}
+    // 뺄셈은 큰 쪽에서 작은 쪽을 뺀다 (음수는 중1에서 다룬다)
+    const big=A>B, bn=big?n1:n2, bd=big?d1:d2, sn=big?n2:n1, sd=big?d2:d1;
+    const bA=Math.max(A,B), sA=Math.min(A,B);
+    const[rn,rd]=red(bA-sA,L);
+    return{q:`${F(bn,bd)} − ${F(sn,sd)} = @`,a:{n:rn,d:rd},
+      h:`<b>먼저 통분.</b> 최소공배수 ${L}로 맞추면 ${bA}/${L} − ${sA}/${L} = ${bA-sA}/${L} → <span class="ans">${rn}/${rd}</span>`};}},
   {id:'fracMul',name:'분수 곱셈',ex:'2/3 × 3/4',t:6500,type:'fr',gen(){const d1=R(2,9),n1=R(1,d1-1),d2=R(2,9),n2=R(1,d2-1);const[rn,rd]=red(n1*n2,d1*d2);
     return{q:`${F(n1,d1)} × ${F(n2,d2)} = @`,a:{n:rn,d:rd},h:`분자는 분자끼리 ${n1}×${n2}=${n1*n2}, 분모는 분모끼리 ${d1}×${d2}=${d1*d2} → 약분하면 <span class="ans">${rn}/${rd}</span>`};}},
   {id:'fracDiv',name:'분수 나눗셈',ex:'3/4 ÷ 2/5',t:8000,type:'fr',gen(){const d1=R(2,9),n1=R(1,d1-1),d2=R(2,9),n2=R(1,d2-1);const[rn,rd]=red(n1*d2,d1*n2);
     return{q:`${F(n1,d1)} ÷ ${F(n2,d2)} = @`,a:{n:rn,d:rd},h:`나누는 분수를 <b>뒤집어 곱해요</b>. ${n1}/${d1} × ${d2}/${n2} = ${n1*d2}/${d1*n2} → <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'mixToImp',name:'대분수 → 가분수',ex:'2와 1/3 = □/3',t:5000,type:'fr',gen(){const [n,d]=properFrac(9);const w=R(1,5);
+    return{q:`${MX(w,n,d)} = @`,a:{n:w*d+n,d},
+      h:`통 ${w}개를 각각 ${d}조각으로 = ${w}×${d}=${w*d}조각. 여기에 ${n}조각을 더하면 <span class="ans">${w*d+n}/${d}</span>`};}},
+  {id:'impToMix',name:'가분수 → 대분수',ex:'7/3 = 2와 1/3',t:5000,type:'mx',gen(){const [n,d]=properFrac(9);const w=R(1,5);
+    return{q:`${F(w*d+n,d)} = @`,a:{w,n,d},
+      h:`${w*d+n} ÷ ${d} = ${w} … ${n}. 통이 ${w}개 나오고 ${n}조각이 남아요 → <span class="ans">${w}과 ${n}/${d}</span>`};}},
+  {id:'mixAdd',name:'대분수 덧셈',ex:'2와 1/4 + 1과 3/4',t:9000,type:'mx',gen(){
+    let d,n1,n2;
+    // 분수 부분은 기약으로, 합이 딱 떨어지면 대분수 칸이 비니 그것도 피한다
+    do{d=R(3,9);n1=R(1,d-1);n2=R(1,d-1);}while(gcd(n1,d)!==1||gcd(n2,d)!==1||(n1+n2)%d===0);
+    const w1=R(1,4),w2=R(1,4);
+    const mm=toMix((w1*d+n1)+(w2*d+n2),d);
+    return{q:`${MX(w1,n1,d)} + ${MX(w2,n2,d)} = @`,a:mm,
+      h:`<b>통끼리, 조각끼리.</b> 통 ${w1}+${w2}=${w1+w2}, 조각 ${n1}+${n2}=${n1+n2}${n1+n2>=d?` → ${d}조각이 모이면 통 하나가 되니 넘겨요`:''} → <span class="ans">${mm.w}과 ${mm.n}/${mm.d}</span>`};}},
+  {id:'mixSub',name:'대분수 뺄셈',ex:'3과 1/4 − 1과 3/4',t:10000,type:'mx',gen(){
+    let d,n1,n2;
+    do{ const p=properFrac(9); n1=p[0]; d=p[1]; n2=R(1,d-1); }while(gcd(n2,d)!==1||n1===n2);
+    const w1=R(3,7), w2=R(1,w1-2);
+    let W=w1-w2, N=n1-n2, borrow=false;
+    if(N<0){ W-=1; N+=d; borrow=true; }
+    const[rn,rd]=red(N,d);
+    return{q:`${MX(w1,n1,d)} − ${MX(w2,n2,d)} = @`,a:{w:W,n:rn,d:rd},
+      h: borrow
+        ? `조각이 모자라요. <b>통 하나를 ${d}조각으로 바꿔 빌려옵니다.</b> ${w1}통에서 하나 빌리면 ${w1-1}통에 ${n1+d}조각 → 통 ${w1-1}−${w2}=${W}, 조각 ${n1+d}−${n2}=${N} → <span class="ans">${W}과 ${rn}/${rd}</span>`
+        : `<b>통끼리, 조각끼리.</b> 통 ${w1}−${w2}=${W}, 조각 ${n1}−${n2}=${N} → <span class="ans">${W}과 ${rn}/${rd}</span>`};}},
+  {id:'compareFrac',name:'분수 크기 비교',ex:'2/3 과 3/5 중 큰 것',t:8000,type:'fr',gen(){
+    let n1,d1,n2,d2;
+    do{ [n1,d1]=properFrac(9,2); [n2,d2]=properFrac(9,2); }while(n1*d2===n2*d1);
+    const big=n1*d2>n2*d1;
+    const L=d1*d2/gcd(d1,d2);
+    return{q:`${F(n1,d1)} 과 ${F(n2,d2)} 중 더 큰 수 = @`,a:big?{n:n1,d:d1}:{n:n2,d:d2},
+      h:`<b>통분해서 분자를 비교해요.</b> ${n1}/${d1}=${n1*(L/d1)}/${L}, ${n2}/${d2}=${n2*(L/d2)}/${L} → ${n1*(L/d1)>n2*(L/d2)?n1*(L/d1):n2*(L/d2)}쪽이 크니 <span class="ans">${big?n1+'/'+d1:n2+'/'+d2}</span>`};}},
+  {id:'mixMul',name:'대분수 곱셈',ex:'1과 1/2 × 2와 1/3',t:11000,type:'fr',gen(){
+    const[n1,d1]=properFrac(6,2),[n2,d2]=properFrac(6,2);const w1=R(1,3),w2=R(1,3);
+    const A=w1*d1+n1, B=w2*d2+n2; const[rn,rd]=red(A*B,d1*d2);
+    return{q:`${MX(w1,n1,d1)} × ${MX(w2,n2,d2)} = @`,a:{n:rn,d:rd},
+      h:`<b>대분수를 먼저 가분수로.</b> ${A}/${d1} × ${B}/${d2} = ${A*B}/${d1*d2} → 약분하면 <span class="ans">${rn}/${rd}</span> (가분수로 답해요)`};}},
+  {id:'mixDiv',name:'대분수 나눗셈',ex:'2와 1/2 ÷ 1과 1/4',t:12000,type:'fr',gen(){
+    const[n1,d1]=properFrac(6,2),[n2,d2]=properFrac(6,2);const w1=R(1,3),w2=R(1,3);
+    const A=w1*d1+n1, B=w2*d2+n2; const[rn,rd]=red(A*d2,d1*B);
+    return{q:`${MX(w1,n1,d1)} ÷ ${MX(w2,n2,d2)} = @`,a:{n:rn,d:rd},
+      h:`<b>가분수로 바꾼 뒤 뒤집어 곱해요.</b> ${A}/${d1} × ${d2}/${B} = ${A*d2}/${d1*B} → <span class="ans">${rn}/${rd}</span>`};}},
+  {id:'fracNat',name:'분수 × 자연수',ex:'2/5 × 3',t:5000,type:'fr',gen(){const d=R(2,9),n=R(1,d-1),k=R(2,9);const[rn,rd]=red(n*k,d);
+    return{q:`${F(n,d)} × ${k} = @`,a:{n:rn,d:rd},
+      h:`조각 수만 ${k}배가 돼요. ${n}×${k}=${n*k} → ${n*k}/${d}${rd!==d?` → 약분하면 <span class="ans">${rn}/${rd}</span>`:` = <span class="ans">${rn}/${rd}</span>`}`};}},
+  {id:'fracDivNat',name:'분수 ÷ 자연수',ex:'4/5 ÷ 2',t:6000,type:'fr',gen(){const d=R(2,9),n=R(1,d-1),k=R(2,9);const[rn,rd]=red(n,d*k);
+    return{q:`${F(n,d)} ÷ ${k} = @`,a:{n:rn,d:rd},
+      h:`${k}로 나누는 건 ${F(1,k)}을 곱하는 것. 조각을 ${k}배로 잘게 쪼개니 분모가 ${d}×${k}=${d*k} → <span class="ans">${rn}/${rd}</span>`};}},
 ]},
 {id:8,name:'소수',sub:'자리값이 전부다',skills:[
   {id:'decAdd',name:'소수 덧셈 · 뺄셈',ex:'0.7 + 0.5',t:4000,dec:1,gen(){const A=R(1,90),B=R(1,90);
@@ -417,10 +587,61 @@ const STAGES=[
   {id:'decShift',name:'10배 · 100배',ex:'3.7 × 100',t:3000,dec:2,gen(){const A=R(11,999)/100;const op=pick([['× 10',10],['× 100',100],['÷ 10',.1]]);
     const v=Math.round(A*op[1]*1000)/1000;
     return{q:`${A} ${op[0]} = @`,a:v,h:`소수점이 ${op[1]===0.1?'왼쪽으로 한 칸':op[1]===10?'오른쪽으로 한 칸':'오른쪽으로 두 칸'} 움직여요 → <span class="ans">${v}</span>`};}},
-  {id:'decMul',name:'소수 곱셈',ex:'0.4 × 0.6',t:5000,dec:2,gen(){const a=R(2,9),b=R(2,9);const v=Math.round(a*b)/100;
-    return{q:`0.${a} × 0.${b} = @`,a:v,h:`${a}×${b}=${a*b}. 소수점 아래가 각각 1자리씩, 합쳐서 2자리 → <span class="ans">${v.toFixed(2)}</span>`};}},
+  {id:'decMul',name:'소수 곱셈',ex:'0.4 × 0.6 · 2.3 × 7',t:5500,dec:2,gen(){const f=R(1,3);
+    if(f===1){const a=R(2,9),b=R(2,9);const v=a*b/100;
+      return{q:`0.${a} × 0.${b} = @`,a:v,h:`${a}×${b}=${a*b}. 소수점 아래가 각각 1자리씩, 합쳐서 <b>2자리</b> → <span class="ans">${v.toFixed(2)}</span>`};}
+    if(f===2){const A=R(11,99),k=R(2,9);const v=A*k/10;
+      return{q:`${(A/10).toFixed(1)} × ${k} = @`,a:v,
+        h:`${A}×${k}=${A*k}. 소수점 아래가 <b>1자리</b>이므로 <span class="ans">${(A*k/10).toFixed(1)}</span>`};}
+    const A=R(11,99),b=R(2,9);const v=A*b/1000;
+    return{q:`${(A/100).toFixed(2)} × 0.${b} = @`,a:v,
+      h:`${A}×${b}=${A*b}. 소수점 아래가 2자리 + 1자리 = <b>3자리</b> → <span class="ans">${(A*b/1000).toFixed(3)}</span>`};}},
+  {id:'decDiv',name:'소수 나눗셈',ex:'2.4 ÷ 3',t:8000,dec:2,gen(){const f=R(1,3);
+    if(f===1){const b=R(2,9),q=R(2,40);const A=b*q;   // (소수) ÷ (자연수)
+      return{q:`${(A/10).toFixed(1)} ÷ ${b} = @`,a:q/10,
+        h:`10배로 크게 보면 ${A} ÷ ${b} = ${q}. 다시 10으로 나누면 <span class="ans">${(q/10).toFixed(1)}</span>`};}
+    if(f===2){const b=R(2,9),q=R(2,12);const A=b*q;   // (소수) ÷ (소수)
+      return{q:`${(A/10).toFixed(1)} ÷ 0.${b} = @`,a:q,
+        h:`<b>둘 다 10배 해도 몫은 그대로예요.</b> ${(A/10).toFixed(1)} ÷ 0.${b} = ${A} ÷ ${b} = <span class="ans">${q}</span>`};}
+    const b=pick([2,4,5,8]),q=R(1,9);const n=b*q;      // 자연수 ÷ 자연수를 소수로
+    return{q:`${q} ÷ ${b} = @`,a:q/b,
+      h:`나누어떨어지지 않으면 0을 붙여 계속 나눠요. ${q} ÷ ${b} = <span class="ans">${q/b}</span>`};}},
+  {id:'finiteDec',name:'분수를 소수로',ex:'3/20 = □/100',t:7000,gen(){
+    const T=[[2,10,5],[4,100,25],[5,10,2],[8,1000,125],[20,100,5],[25,100,4],[50,100,2],[40,1000,25]];
+    const t=pick(T); const d=t[0], base=t[1], k=t[2];
+    const n=R(1,d-1);
+    return{q:`${F(n,d)} = ${F('@',base)}`,a:n*k,
+      h:`분모를 <b>${base}</b>으로 만들려면 ${d}에 ${k}를 곱해요. 분자에도 똑같이 ${n}×${k} = <span class="ans">${n*k}</span> → ${(n/d)}`};}},
+  {id:'repDec',name:'순환소수 → 분수',ex:'0.777… = 7/□',t:9000,gen(){
+    if(Math.random()<.6){const a=R(1,8);
+      return{q:`0.${a}${a}${a}… = ${F(a,'@')}`,a:9,
+        h:`한 자리가 반복되면 분모는 <b>9</b>. 0.${a}${a}${a}… = ${a}/9 → <span class="ans">9</span>`};}
+    const a=R(10,98);
+    return{q:`0.${a}${a}… = ${F(a,'@')}`,a:99,
+      h:`두 자리가 반복되면 분모는 <b>99</b>. 반복 자리 수만큼 9를 쓰면 돼요 → <span class="ans">99</span>`};}},
 ]},
-{id:9,name:'정수 (중등 준비)',sub:'음수가 섞이면 규칙이 보인다',skills:[
+{id:9,name:'비와 비율',sub:'백분율 · 비례식 · 비례배분',skills:[
+  {id:'percent',name:'백분율',ex:'40의 25% = □',t:6000,gen(){const f=R(1,3);
+    if(f===1){const p=pick([5,10,20,25,50,75]),n=pick([20,40,60,80,100,120,200]);
+      return{q:`${n}의 ${p}% = @`,a:n*p/100,
+        h:`${p}%는 ${F(p,100)}. ${n} × ${p} ÷ 100 = <span class="ans">${n*p/100}</span>`};}
+    if(f===2){const p=R(1,99);
+      return{q:`0.${String(p).padStart(2,'0')} = @%`,a:p,
+        h:`소수를 백분율로 바꿀 땐 <b>100을 곱해요</b>. 0.${String(p).padStart(2,'0')} × 100 = <span class="ans">${p}%</span>`};}
+    const base=pick([20,25,40,50,80,200]),p=pick([10,20,25,50]);
+    return{q:`${base*p/100}은 ${base}의 @%`,a:p,
+      h:`비교하는 양 ÷ 기준량 × 100 = ${base*p/100} ÷ ${base} × 100 = <span class="ans">${p}%</span>`};}},
+  {id:'propEq',name:'비례식',ex:'3 : 4 = 9 : □',t:6000,gen(){const a=R(2,9),b=R(2,9),k=R(2,9);
+    return Math.random()<.5
+      ? {q:`${a} : ${b} = ${a*k} : @`,a:b*k,h:`앞이 ${k}배가 됐으니 뒤도 ${k}배. ${b}×${k} = <span class="ans">${b*k}</span><br>또는 <b>겉끼리 곱 = 안끼리 곱</b>: ${a}×□ = ${b}×${a*k}`}
+      : {q:`${a} : ${b} = @ : ${b*k}`,a:a*k,h:`뒤가 ${k}배가 됐으니 앞도 ${k}배. ${a}×${k} = <span class="ans">${a*k}</span>`};}},
+  {id:'propShare',name:'비례배분',ex:'24를 1:2로 나누면',t:8000,gen(){const p=R(1,5),q=R(1,5),u=R(2,9);
+    const tot=(p+q)*u;
+    return{lead:`${tot}을 ${p} : ${q}로 나누면`,q:`앞쪽 몫 = @`,a:p*u,
+      h:`전체를 ${p}+${q}=${p+q}칸으로 나눠요. 한 칸은 ${tot}÷${p+q}=${u}, 앞쪽은 ${p}칸이니 ${u}×${p} = <span class="ans">${p*u}</span>`};}},
+]},
+
+{id:10,name:'정수와 유리수',sub:'음수가 섞이면 규칙이 보인다',skills:[
   {id:'negAdd',name:'음수 덧셈 · 뺄셈',ex:'(−7) + 4',t:4000,minus:1,gen(){const a=R(2,15),b=R(2,15);const f=R(1,4);
     if(f===1)return{q:`${neg(-a)} + ${b} = @`,a:b-a,h:`빚 ${a}에 ${b}가 생긴 셈. ${b}−${a} = <span class="ans">${M(b-a)}</span>`};
     if(f===2)return{q:`${a} − ${b} = @`,a:a-b,h:`${a}보다 ${b}가 ${b>a?'크니 결과는 음수':'작으니 결과는 양수'} → <span class="ans">${M(a-b)}</span>`};
@@ -434,16 +655,55 @@ const STAGES=[
     if(f===1)return{q:`(−${a})${E(2)} = @`,a:a*a,h:`괄호 안이 통째로 밑이에요. (−${a})×(−${a}) = <span class="ans">${a*a}</span>`};
     if(f===2)return{q:`−${a}${E(2)} = @`,a:-a*a,h:`<b>밑은 ${a}뿐입니다.</b> ${a}${E(2)}=${a*a}를 구한 뒤 −를 붙여요 → <span class="ans">−${a*a}</span>. (−${a})${E(2)}=${a*a}와 다릅니다.`};
     return{q:`(−${a})${E(3)} = @`,a:-a*a*a,h:`−를 세 번 곱하면 음수. ${a}${E(3)}=${a*a*a} → <span class="ans">−${a*a*a}</span>`};}},
+  {id:'absVal',name:'절댓값',ex:'|−7| = □',t:4000,minus:1,gen(){const f=R(1,3);
+    const a=R(1,15),b=R(1,15);
+    if(f===1){const s=Math.random()<.5?-1:1;
+      return{q:`|${M(s*a)}| = @`,a:a,h:`절댓값은 <b>0에서 얼마나 떨어져 있나</b>예요. 부호를 떼면 <span class="ans">${a}</span>`};}
+    if(f===2)return{q:`|${M(-a)}| + |${b}| = @`,a:a+b,
+      h:`각각 절댓값을 먼저 구해요. ${a} + ${b} = <span class="ans">${a+b}</span>`};
+    return{q:`|${M(-a)}| − |${M(-b)}| = @`,a:a-b,
+      h:`절댓값을 먼저: ${a} − ${b} = <span class="ans">${M(a-b)}</span>. 절댓값을 벗긴 <b>뒤에</b> 계산합니다.`};}},
+  {id:'compareNum',name:'수의 크기 비교',ex:'−3 과 −7 중 큰 것',t:5000,minus:1,dec:2,gen(){
+    if(Math.random()<.5){let a,b;do{a=R(-20,20);b=R(-20,20);}while(a===b);
+      return{q:`${M(a)} 과 ${M(b)} 중 더 큰 수 = @`,a:Math.max(a,b),
+        h:`수직선에서 <b>오른쪽에 있는 쪽</b>이 큽니다. 음수는 0에서 멀수록 작아요 → <span class="ans">${M(Math.max(a,b))}</span>`};}
+    let A,B;do{A=R(1,999);B=R(1,999);}while(A===B);
+    return{q:`${(A/100).toFixed(2)} 과 ${(B/100).toFixed(2)} 중 더 큰 수 = @`,a:Math.max(A,B)/100,
+      h:`<b>높은 자리부터</b> 비교해요 → <span class="ans">${(Math.max(A,B)/100).toFixed(2)}</span>`};}},
+  {id:'ratOp',name:'유리수 사칙연산',ex:'(−2/3) + 1/6',t:10000,type:'fr',minus:1,gen(){
+    // 보여주는 분수도 기약이어야 한다 (2/4 같은 게 나오면 안 됨)
+    const [n1,d1]=properFrac(6,2), [n2,d2]=properFrac(6,2);
+    const s1=Math.random()<.5?-1:1, s2=Math.random()<.5?-1:1;
+    const P=(s,n,d)=>s<0?'(−'+F(n,d)+')':F(n,d);
+    const f=R(1,4);
+    if(f<=2){                                   // 덧셈 · 뺄셈
+      const L=d1*d2/gcd(d1,d2);
+      const A=s1*n1*(L/d1), B=s2*n2*(L/d2);
+      const sub=(f===2);
+      const[rn,rd]=red(sub?A-B:A+B,L);
+      return{q:`${P(s1,n1,d1)} ${sub?'−':'+'} ${P(s2,n2,d2)} = @`,a:{n:rn,d:rd},
+        h:`${sub?'<b>빼기는 부호를 바꿔 더하기.</b> ':''}부호를 정하고 <b>통분</b>해요. 최소공배수 ${L} → ${M(A)}/${L} ${sub?'−':'+'} ${M(B)}/${L} = <span class="ans">${M(rn)}/${rd}</span>`};}
+    if(f===3){const[rn,rd]=red(s1*n1*s2*n2,d1*d2);   // 곱셈
+      return{q:`${P(s1,n1,d1)} × ${P(s2,n2,d2)} = @`,a:{n:rn,d:rd},
+        h:`부호가 ${s1*s2<0?'<b>다르니 음수</b>':'<b>같으니 양수</b>'}. 분자끼리 ${n1}×${n2}=${n1*n2}, 분모끼리 ${d1}×${d2}=${d1*d2} → <span class="ans">${M(rn)}/${rd}</span>`};}
+    const[rn,rd]=red(s1*n1*d2*s2,d1*n2);            // 나눗셈
+    return{q:`${P(s1,n1,d1)} ÷ ${P(s2,n2,d2)} = @`,a:{n:rn,d:rd},
+      h:`<b>뒤집어 곱해요.</b> ${n1}/${d1} × ${d2}/${n2} = ${n1*d2}/${d1*n2}, 부호는 ${s1*s2<0?'다르니 음수':'같으니 양수'} → <span class="ans">${M(rn)}/${rd}</span>`};}},
 ]},
 
-{id:10,name:'문자와 식',sub:'중1 · 동류항 · 분배법칙 · 지수법칙',skills:[
+{id:10,name:'문자와 식',sub:'동류항 · 분배법칙 · 지수법칙',skills:[
   {id:'monoAdd',name:'동류항 정리',ex:'3x + 5x = □x',t:3000,minus:1,gen(){const a=R(2,12),b=R(2,12);
     if(Math.random()<.5)return{q:`${a}x + ${b}x = @x`,a:a+b,h:`문자가 같으면 <b>숫자끼리만</b> 더해요. ${a}+${b}=<span class="ans">${a+b}</span>, x는 그대로입니다.`};
     return{q:`${a}x − ${b}x = @x`,a:a-b,h:`x가 ${a}개 있다가 ${b}개 없어진 셈. ${a}−${b}=<span class="ans">${M(a-b)}</span>`};}},
-  {id:'distrib',name:'분배법칙',ex:'3(2x + 5)',t:4500,gen(){const k=R(2,9),a=R(2,9),b=R(2,12);
-    if(Math.random()<.5)return{q:`${k}(${a}x + ${b}) = @x + ${k*b}`,a:k*a,
-      h:`괄호 앞의 ${k}를 <b>안쪽 둘 다에</b> 곱해요. ${k}×${a}=<span class="ans">${k*a}</span>`};
-    return{q:`${k}(${a}x + ${b}) = ${k*a}x + @`,a:k*b,h:`${k}를 ${b}에 곱하는 것도 잊지 마세요 → <span class="ans">${k*b}</span>`};}},
+  {id:'distrib',name:'분배법칙',ex:'3(2x + 5) · −2(x − 4)',t:4800,minus:1,gen(){
+    const k=(Math.random()<.35?-1:1)*R(2,9), a=R(2,9), b=R(2,12), plus=Math.random()<.5;
+    const ks=k<0?'−'+(-k):String(k), inner=`${a}x ${plus?'+':'−'} ${b}`;
+    const cb=k*(plus?b:-b);
+    if(Math.random()<.5)
+      return{q:`${ks}(${inner}) = @x ${cb<0?'− '+(-cb):'+ '+cb}`,a:k*a,
+        h:`괄호 앞의 ${ks}를 <b>안쪽 둘 다에</b> 곱해요. ${ks}×${a} = <span class="ans">${M(k*a)}</span>${k<0?' — 음수를 곱하면 부호가 바뀝니다':''}`};
+    return{lead:`${ks}(${inner}) 를 풀면`,q:`상수항 = @`,a:cb,
+      h:`${ks}를 ${plus?'':'−'}${b}에도 곱해요. ${ks}×${plus?'':'−'}${b} = <span class="ans">${M(cb)}</span>`};}},
   {id:'subst',name:'식의 값',ex:'x = 4일 때 3x − 5',t:4500,minus:1,gen(){const v=R(2,9),a=R(2,9),b=R(1,15),p=Math.random()<.5;
     const val=p?a*v+b:a*v-b;
     return{lead:`x = ${v} 일 때`,q:`${a}x ${p?'+':'−'} ${b} = @`,a:val,
@@ -458,9 +718,26 @@ const STAGES=[
   {id:'monoMul',name:'단항식 곱셈',ex:'2x³ × 4x² = □x⁵',t:5000,gen(){const a=R(2,9),b=R(2,9),p=R(1,5),q=R(1,5);
     return{q:`${a}x${E(p)} × ${b}x${E(q)} = @x${E(p+q)}`,a:a*b,
       h:`<b>계수는 곱하고, 지수는 더합니다.</b> ${a}×${b}=<span class="ans">${a*b}</span>, 지수는 ${p}+${q}=${p+q}`};}},
+  {id:'monoDiv',name:'단항식 나눗셈',ex:'12x⁵ ÷ 3x² = □x³',t:7000,gen(){const b=R(2,9),k=R(2,9),q=R(1,3),p=q+R(1,4);
+    return{q:`${b*k}x${E(p)} ÷ ${b}x${E(q)} = @x${E(p-q)}`,a:k,
+      h:`<b>계수는 나누고, 지수는 뺍니다.</b> ${b*k}÷${b}=<span class="ans">${k}</span>, 지수는 ${p}−${q}=${p-q}`};}},
+  {id:'polyMul',name:'단항식 × 다항식',ex:'2x(3x + 4)',t:8000,minus:1,gen(){
+    const k=(Math.random()<.3?-1:1)*R(2,7), a=R(2,9), b=R(1,12), plus=Math.random()<.5;
+    const ks=k<0?'−'+(-k):String(k);
+    const cb=k*(plus?b:-b);
+    return{q:`${ks}x(${a}x ${plus?'+':'−'} ${b}) = @x${E(2)} ${cb<0?'− '+(-cb):'+ '+cb}x`,a:k*a,
+      h:`<b>앞의 ${ks}x를 안쪽 둘 다에 곱해요.</b> ${ks}x × ${a}x = ${M(k*a)}x², 계수는 ${ks}×${a} = <span class="ans">${M(k*a)}</span> (지수는 1+1=2)`};}},
+  {id:'polyAdd',name:'다항식 덧셈·뺄셈',ex:'(3x+2) + (4x−5)',t:8000,minus:1,gen(){
+    const a=R(2,9),b=R(1,12),c=R(2,9),d=R(1,12);
+    if(Math.random()<.5){const k=b-d;
+      return{q:`(${a}x + ${b}) + (${c}x − ${d}) = @x ${k<0?'− '+(-k):'+ '+k}`,a:a+c,
+        h:`<b>같은 것끼리만.</b> x끼리 ${a}+${c}=<span class="ans">${a+c}</span>, 숫자끼리 ${b}−${d}=${k}`};}
+    const k=b-d;
+    return{q:`(${a+c}x + ${b}) − (${c}x + ${d}) = @x ${k<0?'− '+(-k):'+ '+k}`,a:a,
+      h:`<b>괄호 앞의 −는 안쪽 전부에 걸립니다.</b> ${a+c}x − ${c}x = <span class="ans">${a}</span>x, ${b}−${d}=${k}`};}},
 ]},
 
-{id:11,name:'일차방정식',sub:'중1 · 이항하고 정리하기',skills:[
+{id:11,name:'방정식과 부등식',sub:'이항하고 정리하기 · 부등호 방향 · 연립',skills:[
   {id:'eqSimple',name:'한 번 이항',ex:'x + 7 = 12',t:3500,minus:1,gen(){const x=R(-9,15),b=R(2,15);
     if(Math.random()<.5)return{lead:`x + ${b} = ${M(x+b)}`,q:`x = @`,a:x,
       h:`양변에서 ${b}를 빼요. ${M(x+b)} − ${b} = <span class="ans">${M(x)}</span>`};
@@ -480,9 +757,24 @@ const STAGES=[
     const d=R(2,6),m=R(-4,6),b=R(1,12),p=Math.random()<.5;const x=d*m;
     return{lead:`${F('x',d)} ${p?'+':'−'} ${b} = ${M(p?m+b:m-b)}`,q:`x = @`,a:x,
       h:`<b>양변에 ${d}를 곱해</b> 분모를 없애요. x ${p?'+':'−'} ${b*d} = ${M((p?m+b:m-b)*d)} → <span class="ans">${M(x)}</span>`};}},
+  {id:'ineq',name:'일차부등식',ex:'2x + 3 < 11',t:9000,minus:1,gen(){
+    const neg=Math.random()<.45;                       // 음수로 나누면 부등호가 뒤집힌다 — 여기가 핵심
+    const a=(neg?-1:1)*R(2,7), x=R(-6,9), b=R(1,15), p=Math.random()<.5;
+    const rhs=a*x+(p?b:-b);
+    const sign=Math.random()<.5?'<':'>';
+    const flipped=neg?(sign==='<'?'>':'<'):sign;
+    return{lead:`${a<0?'−'+(-a):a}x ${p?'+':'−'} ${b} ${sign} ${M(rhs)}`,q:`x ${flipped} @`,a:x,
+      h:`먼저 ${b}를 ${p?'빼면':'더하면'} ${a<0?'−'+(-a):a}x ${sign} ${M(a*x)}. ${neg
+        ? `그다음 <b>음수 ${a}로 나누니 부등호가 뒤집혀</b> x ${flipped} <span class="ans">${M(x)}</span>`
+        : `그다음 ${a}로 나누면 x ${flipped} <span class="ans">${M(x)}</span>`}`};}},
+  {id:'simulEq',name:'연립방정식',ex:'x+y=7, x−y=1',t:15000,type:'two',minus:1,gen(){
+    const x=R(-5,9),y=R(-5,9);const a=R(1,4),b=R(1,4);
+    return{lead:`x + y = ${M(x+y)} ,  ${a>1?a:''}x − ${b>1?b:''}y = ${M(a*x-b*y)}`,q:`@`,
+      labels:['x','y'],a:[x,y],
+      h:`첫 식에서 y = ${M(x+y)} − x. 이걸 둘째 식에 <b>대입</b>하면 x = <span class="ans">${M(x)}</span>, 다시 넣으면 y = <span class="ans">${M(y)}</span>`};}},
 ]},
 
-{id:12,name:'함수',sub:'중1~2 · 대응 · 기울기 · 정비례와 반비례',skills:[
+{id:12,name:'함수',sub:'대응 · 기울기 · 정비례와 반비례',skills:[
   {id:'funcVal',name:'함숫값 구하기',ex:'f(x)=2x+3, f(4)',t:4500,minus:1,gen(){const a=R(2,9),b=R(1,12),v=R(-5,9),p=Math.random()<.5;
     return{lead:`f(x) = ${a}x ${p?'+':'−'} ${b}`,q:`f(${M(v)}) = @`,a:p?a*v+b:a*v-b,
       h:`x 자리마다 ${M(v)}를 넣어요. ${a}×(${M(v)})=${M(a*v)}, ${M(a*v)} ${p?'+':'−'} ${b} = <span class="ans">${M(p?a*v+b:a*v-b)}</span>`};}},
@@ -501,20 +793,172 @@ const STAGES=[
     const v=R(2,9),y=R(2,9);const k=v*y;
     return{lead:`y = ${F(k,'x')}`,q:`x = ${v} 일 때  y = @`,a:y,
       h:`x 자리에 ${v}를 넣으면 ${k} ÷ ${v} = <span class="ans">${y}</span> — x가 2배가 되면 y는 절반이 되는 관계입니다.`};}},
+  {id:'intercept',name:'x절편 · y절편',ex:'y = 3x − 6 의 x절편',t:6000,minus:1,gen(){
+    let a;do{a=R(-5,6);}while(a===0);
+    const k=R(-6,8);const b=-a*k;                       // x절편이 정수가 되도록
+    const line=`y = ${a<0?'−'+(-a):a}x ${b<0?'− '+(-b):'+ '+b}`;
+    return Math.random()<.5
+      ? {lead:line,q:`x절편 = @`,a:k,h:`x절편은 <b>y가 0일 때의 x</b>. ${a<0?'−'+(-a):a}x ${b<0?'− '+(-b):'+ '+b} = 0 → x = <span class="ans">${M(k)}</span>`}
+      : {lead:line,q:`y절편 = @`,a:b,h:`y절편은 <b>x가 0일 때의 y</b>. x에 0을 넣으면 남는 건 상수항 → <span class="ans">${M(b)}</span>`};}},
+]},
+
+{id:13,name:'제곱근과 이차식',sub:'중3 · 근호 · 인수분해 · 이차방정식',skills:[
+  {id:'sqrtBasic',name:'제곱근',ex:'√81 = □',t:4000,gen(){const a=R(2,20);
+    return{q:`√${a*a} = @`,a:a,h:`제곱해서 ${a*a}이 되는 수예요. ${a}×${a}=${a*a} → <span class="ans">${a}</span>`};}},
+  {id:'sqrtSimp',name:'근호 정리',ex:'√18 = □√2',t:8000,gen(){
+    if(Math.random()<.5){const k=R(2,6),m=pick([2,3,5,6,7]);
+      return{q:`√${k*k*m} = @√${m}`,a:k,
+        h:`${k*k*m} = ${k*k} × ${m}이고 √${k*k}=${k}이니 밖으로 나옵니다 → <span class="ans">${k}</span>√${m}`};}
+    const a=R(2,8),b=R(2,8);const p=a*b;const r=Math.round(Math.sqrt(p*p));
+    return{q:`√${a} × √${b} = √@`,a:a*b,
+      h:`근호끼리 곱할 땐 <b>안에서 곱해요</b>. ${a}×${b} = <span class="ans">${a*b}</span>`};}},
+  {id:'sqrtAdd',name:'제곱근 덧셈·뺄셈',ex:'2√3 + 5√3 = □√3',t:8000,minus:1,gen(){
+    const m=pick([2,3,5,6,7]);
+    if(Math.random()<.5){const a=R(2,9),b=R(1,9),sub=Math.random()<.5;
+      return{q:`${a}√${m} ${sub?'−':'+'} ${b}√${m} = @√${m}`,a:sub?a-b:a+b,
+        h:`<b>√${m}가 같으니 앞의 수끼리만.</b> ${a}${sub?'−':'+'}${b} = <span class="ans">${M(sub?a-b:a+b)}</span>`};}
+    const k=R(2,5);   // √(k²m) + √m 처럼 정리부터 해야 하는 형태
+    return{q:`√${k*k*m} + √${m} = @√${m}`,a:k+1,
+      h:`<b>먼저 근호를 정리해요.</b> √${k*k*m} = ${k}√${m}. 그러면 ${k}√${m} + √${m} = <span class="ans">${k+1}</span>√${m}`};}},
+  {id:'rationalize',name:'분모의 유리화',ex:'6/√2 = □√2',t:9000,gen(){
+    const m=pick([2,3,5,7]);
+    if(Math.random()<.5){const k=R(2,8);
+      return{q:`${F(k*m,'√'+m)} = @√${m}`,a:k,
+        h:`분모와 분자에 √${m}를 곱해요. ${k*m}√${m} ÷ ${m} = <span class="ans">${k}</span>√${m}`};}
+    return{q:`${F(1,'√'+m)} = ${F('√'+m,'@')}`,a:m,
+      h:`위아래에 √${m}를 곱하면 분모가 √${m}×√${m} = <span class="ans">${m}</span> 이 되어 근호가 사라집니다.`};}},
+  {id:'factorSq',name:'완전제곱식',ex:'x² + 6x + 9 = (x+□)²',t:8000,minus:1,gen(){
+    const a=R(2,9),neg=Math.random()<.5;
+    return{q:`x${E(2)} ${neg?'−':'+'} ${2*a}x + ${a*a} = (x ${neg?'−':'+'} @)${E(2)}`,a:a,
+      h:`상수항 ${a*a} = ${a}², 그리고 x의 계수 ${2*a} = 2×${a}. 둘이 맞아떨어지니 <span class="ans">${a}</span>`};}},
+  {id:'discriminant',name:'판별식',ex:'x² − 3x + 1 = 0 의 D',t:8000,minus:1,gen(){
+    const a=R(1,3),b=R(-8,8),c=R(-6,6);
+    const D=b*b-4*a*c;
+    const at=a===1?'':String(a);
+    return{lead:`${at}x${E(2)} ${b<0?'− '+(-b):'+ '+b}x ${c<0?'− '+(-c):'+ '+c} = 0`,q:`D = b${E(2)} − 4ac = @`,a:D,
+      h:`a=${a}, b=${M(b)}, c=${M(c)}. ${M(b)}² − 4×${a}×${M(c)} = ${b*b} − ${4*a*c} = <span class="ans">${M(D)}</span> → 근이 ${D>0?'<b>두 개</b>':D===0?'<b>한 개(중근)</b>':'<b>없음</b>'}`};}},
+  {id:'factorize',name:'인수분해',ex:'x² + 5x + 6 = (x+2)(x+□)',t:9000,minus:1,gen(){
+    const p=R(1,9),q=R(1,9);
+    if(Math.random()<.5)
+      return{q:`x${E(2)} + ${p+q}x + ${p*q} = (x + ${p})(x + @)`,a:q,
+        h:`더해서 ${p+q}, 곱해서 ${p*q}인 두 수를 찾아요 → ${p}와 <span class="ans">${q}</span>`};
+    return{q:`x${E(2)} − ${p*p} = (x + ${p})(x − @)`,a:p,
+      h:`<b>합차 공식</b>: a²−b² = (a+b)(a−b). 여기서 b는 √${p*p}=<span class="ans">${p}</span>`};}},
+  {id:'quadEq',name:'이차방정식',ex:'x² − 5x + 6 = 0',t:13000,type:'two',minus:1,anyOrder:true,gen(){
+    let p,q;do{p=R(-7,7);q=R(-7,7);}while(p===q);
+    const b=-(p+q), c=p*q;
+    return{lead:`x${E(2)} ${b<0?'− '+(-b):'+ '+b}x ${c<0?'− '+(-c):'+ '+c} = 0`,q:`@`,
+      labels:['x =',', x ='],a:[Math.min(p,q),Math.max(p,q)],anyOrder:true,
+      h:`더해서 ${M(-b)}, 곱해서 ${M(c)}인 두 수 → ${M(p)}와 ${M(q)}. (x ${p<0?'+ '+(-p):'− '+p})(x ${q<0?'+ '+(-q):'− '+q}) = 0 이니 x = <span class="ans">${M(Math.min(p,q))}</span> 또는 <span class="ans">${M(Math.max(p,q))}</span>`};}},
 ]},
 ];
-const ALL={}; STAGES.forEach(s=>s.skills.forEach(k=>{k.stage=s.id; ALL[k.id]=k;}));
+STAGES.forEach((s,i)=>{s.id=i+1;});   // 단계를 사이에 끼워 넣어도 번호가 알아서 맞게
+/* ── 학년 ────────────────────────────────────────────────
+   교육과정을 기준으로 맞춘 것. 학교마다 진도가 조금씩 다르니
+   화면에도 "대략"이라고 적어 둔다. 잠긴 단계도 연습은 언제든 된다. */
+const GRADE={
+  make10:'초1',split:'초1',add1:'초1',sub1:'초1',teen:'초1',addc:'초1',subb:'초1',
+  add2_1:'초2',sub2_1:'초2',add22n:'초2',add22c:'초2',sub22n:'초2',sub22b:'초2',
+  missAdd:'초2',missSub:'초2',gugu25:'초2',gugu69:'초2',guguRev:'초2',
+  add3num:'초2',
+  add3:'초3',sub3:'초3',mul3_1:'초3',placeVal:'초3',
+  mixSub:'초5',compareFrac:'초5',mixMul:'초5',mixDiv:'초6',
+  absVal:'중1',compareNum:'중1',
+  polyMul:'중2',finiteDec:'중2',
+  sqrtAdd:'중3',rationalize:'중3',factorSq:'중3',discriminant:'중3',
+  mul2_1:'초3',mul2_2:'초3',div1:'초3',divRem:'초3',div2_1:'초3',balance:'초3',
+  mul3_2:'초4',div3_1:'초4',div3_2:'초4',bigNum:'초4',
+  fracSame:'초4',decAdd:'초4',mixToImp:'초4',impToMix:'초4',
+  divisorCnt:'초5',gcdS:'초5',lcmS:'초5',mixAdd:'초5',fracNat:'초5',
+  mixOrder:'초5',paren:'초5',fracReduce:'초5',fracDiff:'초5',fracMul:'초5',decShift:'초5',decMul:'초5',
+  eqSolve:'초6',fracDiv:'초6',fracDivNat:'초6',decDiv:'초6',
+  percent:'초6',propEq:'초6',propShare:'초6',
+  negAdd:'중1',negMul:'중1',powVal:'중1',ratOp:'중1',primeFac:'중1',
+  monoAdd:'중1',distrib:'중1',subst:'중1',
+  eqSimple:'중1',eqTwoStep:'중1',eqBoth:'중1',eqParen:'중1',propFn:'중1',
+  powLaw:'중2',monoMul:'중2',monoDiv:'중2',polyAdd:'중2',repDec:'중2',
+  ineq:'중2',simulEq:'중2',funcVal:'중2',funcInv:'중2',slope:'중2',intercept:'중2',
+  sqrtBasic:'중3',sqrtSimp:'중3',factorize:'중3',quadEq:'중3'
+};
+const GRADES=['초1','초2','초3','초4','초5','초6','중1','중2','중3'];
+const GLABEL={'초1':'초등 1학년','초2':'초등 2학년','초3':'초등 3학년','초4':'초등 4학년',
+  '초5':'초등 5학년','초6':'초등 6학년','중1':'중학 1학년','중2':'중학 2학년','중3':'중학 3학년'};
+// "4학년", "초4", "중1", "중학교2학년" — 어떻게 쳐도 찾아지도록
+const GALIAS={};
+GRADES.forEach(g=>{const n=g.slice(1);
+  GALIAS[g]=g[0]==='초' ? `초${n} 초등${n} ${n}학년 초등학교${n}학년`
+                        : `중${n} 중등${n} 중학${n} 중${n}학년 중학교${n}학년`;});
+
+/* 사람들이 실제로 칠 법한 말들. 기술 이름에 안 나오는 단어("7단", "약분", "이항")로도 찾아지게. */
+const KEYS={
+  make10:'10의 보수 10만들기 짝꿍', split:'가르기 모으기', teen:'십몇 자리값',
+  addc:'받아올림 10만들기', subb:'받아내림',
+  add2_1:'받아올림', sub2_1:'받아내림', add22c:'받아올림', sub22b:'받아내림',
+  missAdd:'빈칸 네모 미지수', missSub:'빈칸 네모 미지수',
+  gugu25:'2단 3단 4단 5단 곱셈구구', gugu69:'6단 7단 8단 9단 곱셈구구',
+  guguRev:'몇단 곱셈구구 거꾸로 나눗셈',
+  div1:'나눗셈 몫', divRem:'나머지', div2_1:'나눗셈 몫',
+  mixOrder:'혼합계산 계산순서 곱셈먼저', balance:'등호 등식 같다 저울',
+  paren:'괄호 혼합계산', eqSolve:'방정식 미지수 빈칸',
+  fracReduce:'약분 기약분수 최대공약수', fracSame:'분모 분자',
+  fracDiff:'통분 최소공배수', fracMul:'분수곱셈', fracDiv:'분수나눗셈 역수',
+  decAdd:'소수점', decShift:'소수점 자리값 10배 100배', decMul:'소수점',
+  negAdd:'음수 정수 유리수 마이너스', negMul:'음수 정수 부호 마이너스',
+  powVal:'거듭제곱 제곱 부호 밑',
+  monoAdd:'동류항 문자와식', distrib:'분배법칙 전개 괄호', subst:'대입 식의값',
+  powLaw:'지수법칙 거듭제곱 지수', monoMul:'단항식 계수 지수',
+  eqSimple:'방정식 이항', eqTwoStep:'방정식 이항', eqBoth:'방정식 이항 양변',
+  eqParen:'방정식 괄호 분수계수 이항',
+  funcVal:'함수 함숫값 일차함수', funcInv:'함수 일차함수 거꾸로',
+  slope:'기울기 일차함수 직선 변화량', propFn:'정비례 반비례 비례',
+  add3:'세자리 받아올림', sub3:'세자리 받아내림',
+  mul3_1:'세자리곱셈', mul3_2:'세자리곱셈 필산',
+  div3_1:'세자리나눗셈 나머지', div3_2:'세자리나눗셈 나머지 어림',
+  bigNum:'큰수 억 조 자릿값 만',
+  divisorCnt:'약수 약수의개수', gcdS:'최대공약수 공약수 약수',
+  lcmS:'최소공배수 공배수 배수', primeFac:'소인수분해 소수 인수',
+  mixToImp:'대분수 가분수 분수바꾸기', impToMix:'가분수 대분수 분수바꾸기',
+  mixAdd:'대분수덧셈 대분수', fracNat:'분수곱셈 자연수', fracDivNat:'분수나눗셈 자연수',
+  decDiv:'소수나눗셈 소수점', repDec:'순환소수 순환마디 유리수',
+  percent:'백분율 퍼센트 비율 할인', propEq:'비례식 비 내항 외항', propShare:'비례배분 비 나누기',
+  ratOp:'유리수 음수분수 사칙연산',
+  monoDiv:'단항식나눗셈 지수', polyAdd:'다항식 동류항 괄호',
+  ineq:'부등식 부등호 방향 뒤집',
+  simulEq:'연립방정식 대입 가감', intercept:'절편 x절편 y절편 일차함수',
+  sqrtBasic:'제곱근 루트 근호', sqrtSimp:'근호 루트 제곱근 정리',
+  factorize:'인수분해 합차공식', quadEq:'이차방정식 두근 근',
+  add3num:'세수의계산 앞에서부터', placeVal:'자릿값 자리 백의자리 천의자리',
+  mixSub:'대분수뺄셈 대분수 받아내림 빌려오기', compareFrac:'크기비교 대소 분수비교 통분',
+  mixMul:'대분수곱셈 대분수', mixDiv:'대분수나눗셈 대분수',
+  finiteDec:'유한소수 분수를소수로 소수변환',
+  absVal:'절댓값 절대값 부호', compareNum:'크기비교 대소 수직선 정수비교',
+  polyMul:'다항식전개 단항식 분배법칙',
+  sqrtAdd:'제곱근덧셈 루트 동류항', rationalize:'유리화 분모의유리화 루트',
+  factorSq:'완전제곱식 인수분해', discriminant:'판별식 근의개수 근의공식'
+};
+
+const ALL={}; STAGES.forEach(s=>s.skills.forEach(k=>{k.stage=s.id; k.grade=GRADE[k.id]||'초1'; k.key=KEYS[k.id]||''; ALL[k.id]=k;}));
 const SKIDS=Object.keys(ALL);
+const stageOf=id=>STAGES.find(s=>s.id===ALL[id].stage);
 
 /* ── 저장소 ───────────────────────────────────────────── */
 const KEY='yeonsan-dojang-v1';
 let DB, S;
-function blank(name){return{name,skills:{},facts:{},days:{},unlocked:1,placed:false,best:0,
+function blank(name){return{name,v:2,skills:{},facts:{},days:{},unlocked:1,placed:false,best:0,
   settings:{n:30,auto:true,sound:true}};}
+// 2026-08-27에 단계 사이로 새 단계(큰 수와 약수·배수 / 비와 비율)를 끼워 넣었다.
+// 그 전에 저장된 진도는 번호가 밀렸으므로 한 번 옮겨준다.
+const STAGE_MOVE={1:1,2:2,3:3,4:4,5:5,6:7,7:8,8:9,9:11,10:12,11:13,12:14};
+function migrate(p){
+  if(p.v>=2)return;
+  p.unlocked=STAGE_MOVE[p.unlocked]||p.unlocked;
+  p.v=2;
+}
 function load(){
   try{DB=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){DB=null;}
   if(!DB||!DB.p||!DB.p.length)DB={p:[blank('학습자')],i:0,theme:'auto'};
   if(DB.i>=DB.p.length)DB.i=0;
+  DB.p.forEach(migrate);
   S=DB.p[DB.i];
   S.settings=Object.assign({n:30,auto:true,sound:true},S.settings||{});
 }
@@ -649,6 +1093,7 @@ function weakest(n){
 function makeQ(id){
   const sk=ALL[id];const o=sk.gen();
   return{sk:id,q:o.q,a:o.a,h:o.h,fact:o.fact,lead:o.lead||'',type:sk.type||'num',
+         labels:o.labels||sk.labels||null,anyOrder:!!(o.anyOrder||sk.anyOrder),
          dec:sk.dec||0,minus:!!sk.minus,t:sk.t};
 }
 function chooseSkill(){
@@ -676,7 +1121,8 @@ function startSession(only,opts){
 }
 function startPlacement(){
   const probe=['add1','teen','addc','subb','add22c','sub22b','gugu25','gugu69','mul2_1','div1','divRem',
-               'mixOrder','balance','fracSame','fracDiff','decAdd','negAdd','monoAdd','subst','eqTwoStep','funcVal'];
+               'add3','mul3_1','div3_1','fracSame','decAdd','gcdS','mixOrder','fracDiff','fracMul',
+               'percent','fracDiv','negAdd','monoAdd','eqTwoStep','polyAdd','funcVal','factorize'];
   SESS={i:0,n:probe.length,only:null,queue:[],log:[],wrong:[],extra:0,t0:Date.now(),correct:0,msSum:0,newM:[],
         place:true,probe,pi:0,pfail:0};
   go('drill');nextQ();
@@ -685,6 +1131,8 @@ function startPlacement(){
 let Q=null,fields=[''],fi=0,qStart=0,paceTimer=null,locked=false;
 
 function nextQ(){
+  // 정답 뒤 0.43초 타이머가 예약된 채로 세션이 끝나면 여기로 다시 들어올 수 있다
+  if(!SESS){clearInterval(paceTimer);return;}
   if(SESS.place){
     if(SESS.pi>=SESS.probe.length||SESS.pfail>=2)return endSession();
     Q=makeQ(SESS.probe[SESS.pi]);
@@ -695,7 +1143,7 @@ function nextQ(){
     else if(SESS.i>=SESS.n)return endSession();
     else Q=makeQ(SESS.only||chooseSkill());
   }
-  fields=Q.type==='fr'||Q.type==='qr'?['','']:[''];
+  fields=Q.type==='mx'?['','','']:(Q.type==='fr'||Q.type==='qr'||Q.type==='two'?['','']:['']);
   fi=0;locked=false;
   drawDrill();
   qStart=performance.now();
@@ -704,14 +1152,22 @@ function nextQ(){
 
 function blankHTML(){
   if(Q.type==='fr')return `<span class="fr"><i class="bl" data-i="0"></i><i class="bl" data-i="1"></i></span>`;
-  if(Q.type==='qr')return `<span class="qr"><small>몫</small><span class="bl" data-i="0"></span><small>나머지</small><span class="bl" data-i="1"></span></span>`;
+  if(Q.type==='mx')return `<span class="mx"><span class="bl" data-i="0"></span><span class="fr"><i class="bl" data-i="1"></i><i class="bl" data-i="2"></i></span></span>`;
+  if(Q.type==='qr'||Q.type==='two'){
+    const L=Q.labels||['몫','나머지'];
+    return `<span class="qr"><small>${L[0]}</small><span class="bl" data-i="0"></span><small>${L[1]}</small><span class="bl" data-i="1"></span></span>`;
+  }
   return `<span class="bl" data-i="0"></span>`;
 }
 function drawDrill(){
   const sk=ALL[Q.sk];
   const total=SESS.place?SESS.probe.length:SESS.n;
   const done=SESS.place?SESS.pi:Math.min(SESS.i,SESS.n);
-  const aux=Q.type==='fr'||Q.type==='qr'?'▸':Q.dec?'.':Q.minus?'−':'';
+  // 칸이 둘 이상이면 ▸(다음 칸)가 필요하고, 음수·소수면 −/.도 따로 필요하다
+  const aux1=fields.length>1?'▸':'';
+  const aux2=Q.minus?'−':(Q.dec?'.':'');
+  const k1=aux1==='▸'?'next':'';
+  const k2=aux2==='−'?'neg':(aux2==='.'?'dot':'');
   $('#drill').innerHTML=`
   <div class="dhead">
     <button class="iconbtn" id="quitBtn" aria-label="그만두기">✕</button>
@@ -730,10 +1186,11 @@ function drawDrill(){
     <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
     <button class="key sm" data-k="del">⌫</button>
     <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
-    <button class="key sm ${aux?'':'off'}" data-k="${aux==='▸'?'next':aux==='.'?'dot':aux==='−'?'neg':''}">${aux||''}</button>
+    <button class="key sm ${aux1?'':'off'}" data-k="${k1}">${aux1}</button>
     <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
     <button class="key sm" data-k="hint" title="모르겠어요">💡</button>
-    <button class="key wide" data-k="0">0</button>
+    <button class="key" data-k="0">0</button>
+    <button class="key sm ${aux2?'':'off'}" data-k="${k2}">${aux2}</button>
     <button class="key go" data-k="ok">확인</button>
   </div>`;
   $('#quitBtn').onclick=()=>{clearInterval(paceTimer);if(SESS.i>0)endSession();else{SESS=null;go('home');}};
@@ -793,22 +1250,44 @@ function grade(){
     if(n*Q.a.d===Q.a.n*d)return{ok:false,near:'값은 맞았지만 <b>약분</b>이 남았어요.'};
     return{ok:false};
   }
+  if(Q.type==='mx'){
+    const w=parseInt(fields[0],10),n=parseInt(fields[1],10),d=parseInt(fields[2],10);
+    if(!isFinite(w)||!isFinite(n)||!isFinite(d)||d===0)return{ok:false};
+    if(w===Q.a.w&&n===Q.a.n&&d===Q.a.d)return{ok:true};
+    if((w*d+n)*Q.a.d===(Q.a.w*Q.a.d+Q.a.n)*d)return{ok:false,near:'값은 맞았지만 <b>약분</b>이 남았어요.'};
+    return{ok:false};
+  }
   if(Q.type==='qr'){
     const q=parseInt(fields[0],10),r=parseInt(fields[1],10);
     return{ok:q===Q.a.q&&r===Q.a.r};
+  }
+  if(Q.type==='two'){
+    const x=parseFloat(fields[0]),y=parseFloat(fields[1]);
+    if(!isFinite(x)||!isFinite(y))return{ok:false};
+    const eq=(p,q)=>Math.abs(p-q)<1e-9;
+    if(eq(x,Q.a[0])&&eq(y,Q.a[1]))return{ok:true};
+    // 두 근처럼 순서가 상관없는 문제는 뒤바꿔 써도 맞다
+    if(Q.anyOrder&&eq(x,Q.a[1])&&eq(y,Q.a[0]))return{ok:true};
+    return{ok:false};
   }
   const v=parseFloat(fields[0]);
   if(!isFinite(v))return{ok:false};
   return{ok:Math.abs(v-Q.a)<1e-9};
 }
 function ansText(){
-  if(Q.type==='fr')return `${Q.a.n}/${Q.a.d}`;
+  if(Q.type==='fr')return `${M(Q.a.n)}/${Q.a.d}`;
+  if(Q.type==='mx')return `${M(Q.a.w)}과 ${Q.a.n}/${Q.a.d}`;
   if(Q.type==='qr')return `몫 ${Q.a.q} · 나머지 ${Q.a.r}`;
+  if(Q.type==='two'){const L=Q.labels||['',''];
+    return `${L[0]?L[0]+' ':''}${M(Q.a[0])} · ${L[1]?L[1]+' ':''}${M(Q.a[1])}`;}
   return M(Q.a);
 }
 function myText(){
-  if(Q.type==='fr')return fields[0]&&fields[1]?`${fields[0]}/${fields[1]}`:'—';
-  if(Q.type==='qr')return fields[0]!==''?`몫 ${fields[0]||'?'} · 나머지 ${fields[1]||'?'}`:'—';
+  const f=i=>fields[i]?fields[i].replace('-','−'):'?';
+  if(Q.type==='fr')return fields[0]&&fields[1]?`${f(0)}/${f(1)}`:'—';
+  if(Q.type==='mx')return fields.some(v=>v!=='')?`${f(0)}과 ${f(1)}/${f(2)}`:'—';
+  if(Q.type==='qr')return fields[0]!==''?`몫 ${f(0)} · 나머지 ${f(1)}`:'—';
+  if(Q.type==='two')return fields.some(v=>v!=='')?`${f(0)} · ${f(1)}`:'—';
   return fields[0]?fields[0].replace('-','−'):'—';
 }
 
@@ -851,7 +1330,7 @@ function finish(force,ms,gave){
 
   if(ok){
     if(SESS.newM.length&&SESS.newM[SESS.newM.length-1]===Q.sk)toast(`숙달! ${ALL[Q.sk].name}`);
-    setTimeout(()=>{if(locked)nextQ();},430);
+    setTimeout(()=>{if(locked&&SESS)nextQ();},430);
   }else{
     SESS.wrong.push({q:Q.q,lead:Q.lead,my:myText(),ans:ansText(),h:Q.h,sk:Q.sk});
     // 틀린 문제는 곧 다시, 같은 기술의 새 문제는 조금 뒤에.
@@ -934,15 +1413,113 @@ function endSession(){
 }
 
 /* ══ 커리큘럼 ══════════════════════════════════════════ */
+let curriView='grade';   // 'grade' = 학년별, 'stage' = 단계별
+let curriQ='';
+
+const nq=s=>String(s==null?'':s).toLowerCase().replace(/\s+/g,'');
+
+// 학년은 통째로 비교한다. 그냥 포함으로 보면 "1학년"이 "중학교1학년"에도 걸려서
+// 초1을 찾았는데 중1이 따라 나온다.
+function gradeHit(g,q){ return GALIAS[g].split(' ').some(t=>t.indexOf(q)===0); }
+
+// 얼마나 잘 맞는지: 4 = 이름이 그것으로 시작, 3 = 이름 안에 들어 있음,
+//                  2 = 예시·별칭·학년, 1 = 같은 단원이라서
+// ("인수분해"를 쳤을 때 소인수분해보다 인수분해가 먼저 와야 한다)
+function skillRank(k,q){
+  const st=stageOf(k.id);
+  if(nq(k.name).indexOf(q)===0) return 4;
+  if(nq(k.name).indexOf(q)!==-1) return 3;
+  if(nq(k.key).indexOf(q)!==-1 || nq(k.ex).indexOf(q)!==-1 || gradeHit(k.grade,q)) return 2;
+  if(nq(st.name).indexOf(q)!==-1 || nq(st.sub).indexOf(q)!==-1) return 1;
+  return 0;
+}
+function skillRow(k,sub){
+  const r=rec(k.id), m=med(r);
+  return `<div class="srow">
+    <span class="sn">${isM(k.id)?'<span style="color:var(--ok)">✓</span> ':''}${esc(k.name)}<em>${esc(k.ex)}${sub?' · '+esc(sub):''}</em></span>
+    <span class="gchip">${k.grade}</span>
+    <span class="met">${r.n?Math.round(acc(r)*100)+'%':'—'}<br><span style="color:${isFinite(m)?(m<=k.t?'var(--ok)':'var(--gold)'):'var(--ink3)'}">${isFinite(m)?secs(m):'목표 '+secs(k.t)}</span></span>
+    <button class="play" data-drill="${k.id}">연습</button>
+  </div>`;
+}
+
+// 검색바는 한 번만 그리고, 목록만 다시 그린다 (안 그러면 타자 칠 때 커서가 튄다)
 function drawCurri(){
   $('#curri').innerHTML=`<div class="stack" style="padding-top:6px">
-    <div class="card pad">
-      <div class="eyebrow">전체 진도</div>
-      <div class="row" style="margin-top:8px"><div class="progline" style="height:8px"><i style="width:${SKIDS.filter(isM).length/SKIDS.length*100}%;background:var(--ok)"></i></div>
-      <span class="dstat">${SKIDS.filter(isM).length}/${SKIDS.length}</span></div>
-      <p class="tiny" style="margin:9px 0 0">잠긴 단계도 눌러서 <b>미리 연습</b>할 수 있어요. 학교 진도에 맞춰 자유롭게 쓰세요.</p>
+    <div class="findbar">
+      <span class="ic" aria-hidden="true">🔍</span>
+      <input id="curriFind" type="search" inputmode="search" value="${esc(curriQ)}"
+        placeholder="찾을 기술 (구구단, 4학년, 분수 …)" aria-label="연습할 기술 찾기"
+        autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button class="x hidden" id="curriX" type="button" aria-label="찾기 그만두기">✕</button>
     </div>
-    ${STAGES.map(st=>{
+    <div class="seg2" id="curriSeg">
+      <button data-v="grade" class="${curriView==='grade'?'on':''}">학년별</button>
+      <button data-v="stage" class="${curriView==='stage'?'on':''}">단계별</button>
+    </div>
+    <div id="curriList"></div>
+  </div>`;
+  $('#curriFind').addEventListener('input',e=>{curriQ=e.target.value;drawCurriList();});
+  $('#curriFind').addEventListener('keydown',e=>{if(e.key==='Escape'){curriQ='';$('#curriFind').value='';drawCurriList();}});
+  $('#curriX').onclick=()=>{curriQ='';$('#curriFind').value='';drawCurriList();$('#curriFind').focus();};
+  $$('#curriSeg button').forEach(b=>b.onclick=()=>{
+    curriView=b.dataset.v;
+    $$('#curriSeg button').forEach(x=>x.classList.toggle('on',x.dataset.v===curriView));
+    drawCurriList();
+  });
+  drawCurriList();
+}
+
+function drawCurriList(){
+  const q=nq(curriQ), searching=q.length>0;
+  $('#curriX').classList.toggle('hidden',!searching);
+  $('#curriSeg').classList.toggle('hidden',searching);   // 찾는 중에는 보기 전환을 감춘다
+  const box=$('#curriList');
+  const doneAll=SKIDS.filter(isM).length;
+
+  if(searching){
+    const hits=SKIDS.map((id,i)=>({k:ALL[id],r:skillRank(ALL[id],q),i}))
+      .filter(h=>h.r>0)
+      .sort((a,b)=>(b.r-a.r)||(a.i-b.i))    // 잘 맞는 것부터, 같으면 배운 순서대로
+      .map(h=>h.k);
+    box.innerHTML=hits.length
+      ? `<div class="stack">
+          <p class="tiny" style="margin:0 2px">찾은 기술 ${hits.length}개</p>
+          <div class="stage"><div class="slist">${hits.map(k=>skillRow(k,stageOf(k.id).name)).join('')}</div></div>
+        </div>`
+      : `<div class="card pad" style="text-align:center">
+          <p class="tiny" style="margin:0">그런 기술은 없어요. <b>구구단</b>, <b>분수</b>, <b>4학년</b>, <b>받아올림</b>처럼 쳐 보세요.</p>
+        </div>`;
+    bindPlay();
+    return;
+  }
+
+  const head=`<div class="card pad">
+      <div class="eyebrow">전체 진도</div>
+      <div class="row" style="margin-top:8px"><div class="progline" style="height:8px"><i style="width:${doneAll/SKIDS.length*100}%;background:var(--ok)"></i></div>
+      <span class="dstat">${doneAll}/${SKIDS.length}</span></div>
+      <p class="tiny" style="margin:9px 0 0">학년은 교육과정에 맞춘 <b>대략</b>이에요. 잠긴 단계도 눌러서 미리 연습할 수 있으니 학교 진도에 맞춰 자유롭게 쓰세요.</p>
+    </div>`;
+
+  let body;
+  if(curriView==='grade'){
+    const openG=(STAGES.find(s=>s.id===S.unlocked)||STAGES[0]).skills[0].grade;
+    body=GRADES.map(g=>{
+      const ks=SKIDS.map(id=>ALL[id]).filter(k=>k.grade===g);
+      if(!ks.length)return '';
+      const done=ks.filter(k=>isM(k.id)).length;
+      const topics=[...new Set(ks.map(k=>stageOf(k.id).name))].join(' · ');
+      return `<details class="stage" ${g===openG?'open':''}>
+        <summary>
+          <span class="no">${g}</span>
+          <span class="nm"><b>${GLABEL[g]}</b><span>${esc(topics)}</span></span>
+          <span class="bar"><i style="width:${done/ks.length*100}%"></i></span>
+          <span class="dstat">${done}/${ks.length}</span>
+        </summary>
+        <div class="slist">${ks.map(k=>skillRow(k,stageOf(k.id).name)).join('')}</div>
+      </details>`;}).join('');
+  }else{
+    body=STAGES.map(st=>{
       const done=st.skills.filter(k=>isM(k.id)).length;
       const lock=st.id>S.unlocked;
       return `<details class="stage" data-lock="${lock?1:0}" ${st.id===S.unlocked?'open':''}>
@@ -952,20 +1529,19 @@ function drawCurri(){
           <span class="bar"><i style="width:${done/st.skills.length*100}%"></i></span>
           <span class="dstat">${done}/${st.skills.length}</span>
         </summary>
-        <div class="slist">${st.skills.map(k=>{
-          const r=rec(k.id);const m=med(r);
-          return `<div class="srow">
-            <span class="sn">${isM(k.id)?'<span style="color:var(--ok)">✓</span> ':''}${esc(k.name)}<em>${esc(k.ex)}</em></span>
-            <span class="met">${r.n?Math.round(acc(r)*100)+'%':'—'}<br><span style="color:${isFinite(m)?(m<=k.t?'var(--ok)':'var(--gold)'):'var(--ink3)'}">${isFinite(m)?secs(m):'목표 '+secs(k.t)}</span></span>
-            <button class="play" data-drill="${k.id}">연습</button>
-          </div>`;}).join('')}</div>
-      </details>`;}).join('')}
-  </div>`;
+        <div class="slist">${st.skills.map(k=>skillRow(k,'')).join('')}</div>
+      </details>`;}).join('');
+  }
+  box.innerHTML=`<div class="stack">${head}${body}</div>`;
+  bindPlay();
+}
+
+function bindPlay(){
   $$('#curri [data-drill]').forEach(b=>b.onclick=()=>{
-    const id=b.dataset.drill;
-    sheet(`<h2 style="font-size:19px">${esc(ALL[id].name)}</h2>
-      <p class="muted" style="font-size:14px;margin:4px 0 2px">${esc(ALL[id].ex)} 같은 문제만 골라서 풀어요.</p>
-      <p class="tiny">목표 속도 ${secs(ALL[id].t)} · 정확도 90% 이상이면 숙달로 인정됩니다.</p>
+    const id=b.dataset.drill, k=ALL[id];
+    sheet(`<h2 style="font-size:19px">${esc(k.name)}</h2>
+      <p class="muted" style="font-size:14px;margin:4px 0 2px">${esc(k.ex)} 같은 문제만 골라서 풀어요.</p>
+      <p class="tiny">${GLABEL[k.grade]} · ${esc(stageOf(id).name)} · 목표 속도 ${secs(k.t)} · 정확도 90% 이상이면 숙달로 인정됩니다.</p>
       <div class="row" style="gap:9px;margin-top:14px">
         <button class="btn sec" data-n="15">15문제</button>
         <button class="btn pri" data-n="30">30문제</button></div>`);
